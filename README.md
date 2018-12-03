@@ -28,29 +28,29 @@ The code should be avaiable in the directory ./sampling-on-levelset
 ```
 
 ## DIRECTORIES & CODES
-1. src (c/cpp codes)
+1. [src](./src) (c/cpp codes)
 
-     - gen_path.cpp:   implementation of different sampling schemes on an ellipse in R<sup>2</sup>.
+     - [gen_path.cpp](./src/gen_path.cpp):   implementation of different sampling schemes on an ellipse in R<sup>2</sup>.
 
-     - com.c, linpack.c, ranlib.c, ranlib.h:    needed to generate random numbers, borrowed from the package [RANLIB.C](http://www.netlib.org/random/) (file: [ranlib.c.tar.gz](http://www.netlib.org/random/ranlib.c.tar.gz)).
+     - [com.c](./src/com.c), [linpack.c](./src/linpack.c), [ranlib.c](./src/ranlib.c), [ranlib.h](./src/ranlib.h):    needed to generate random numbers, borrowed from the package [RANLIB.C](http://www.netlib.org/random/) (file: [ranlib.c.tar.gz](http://www.netlib.org/random/ranlib.c.tar.gz)).
      
-2. plot-scripts (python scripts for generating figures)
+2. [plot-scripts](./plot-scripts) (python scripts for generating figures)
 
-	- elliptic.py:  illustration for the effects of different projection maps
+	- [elliptic.py](./plot-scripts/elliptic.py):  illustration for the effects of different projection maps
 
-	- plot_bin_from_traj.py: output density profiles for 3 different schemes
+	- [plot_bin_from_traj.py](./plot-scripts/plot_bin_from_traj.py): output density profiles for 3 different schemes
 
-	- vec_field.py: plot the streamlines of different projection maps
+	- [vec_field.py](./plot-scripts/vec_field.py): plot the streamlines of different projection maps
 
-	- path_check_scatter_plot.py: scatter plot for the states sampled using the Euler-Maruyama discretization
+	- [path_check_scatter_plot.py](./plot-scripts/path_check_scatter_plot.py): scatter plot for the states sampled using the Euler-Maruyama discretization
 
 ## USAGE
-1.   Under the directory ./sampling-on-levelset, create directories for data and figures
+1.   Supposing the current directory is ./sampling-on-levelset, create directories for data and figures
 
 ```
     mkdir fig data
 ```
 
-2.   Under the src directory, run the program gen_path, to generate data using different schemes. Data will be stored in ./sampling-on-levelset/data
+2.   Under the [src](./src) directory, run the program gen_path to generate data using different schemes. Data will be stored in ./data
      
-3.   Run the scripts in  ./sampling-on-levelset/plot-scripts/ to plot figures. Figures will be generated in ./sampling-on-levelset/fig
+3.   Run the scripts in  [plot-scripts](./plot-scripts) to plot figures. Figures will be generated in ./fig
