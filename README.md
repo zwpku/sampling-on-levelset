@@ -42,7 +42,7 @@ The code should be avaiable in the directory ./sampling-on-levelset
 
 	- [vec_field.py](./plot-scripts/vec_field.py): plot the streamlines of different projection maps
 
-	- [path_check_scatter_plot.py](./plot-scripts/path_check_scatter_plot.py): scatter plot for the states sampled using the Euler-Maruyama discretization
+	- [path_check_and_scatter_plot.py](./plot-scripts/path_check_and_scatter_plot.py): scatter plot for the states sampled using the Euler-Maruyama discretization
 
 ## USAGE
 1.   Supposing the current directory is ./sampling-on-levelset, create directories for data and figures
