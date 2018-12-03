@@ -4,7 +4,7 @@ Illustrative codes for numerical sampling schemes on a level set.
 
 These codes have been used in the paper:
 
-       [Ergodic SDEs on submanifolds and related numerical sampling schemes](https://arxiv.org/abs/1702.08064)
+ [Ergodic SDEs on submanifolds and related numerical sampling schemes](https://arxiv.org/abs/1702.08064)
 
 ## COMPILE & INSTALL
 
@@ -13,7 +13,7 @@ These codes have been used in the paper:
 ```
 	git clone https://github.com/zwpku/sampling-on-levelset.git
 ```
-   	The code should be avaiable in the directory ./sampling-on-levelset
+The code should be avaiable in the directory ./sampling-on-levelset
 
 2. Enter the directory containing source files.
 
