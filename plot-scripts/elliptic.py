@@ -11,9 +11,15 @@ from numpy import linalg as LA
 from scipy.integrate import odeint
 import matplotlib.patches as mpatches
 
+# 
+# reaction coordinate function
+#
 def xi(x):
     return 0.5 * ( x[0]*x[0]/(c*c) + x[1]*x[1] - 1 )
 
+#
+# vector field of the flow map
+#
 def f(x,t, AA):
     return  [-xi(x) * (x[0] / (c*c) - AA * x[1]), -xi(x)*(AA * x[0] / (c*c) + x[1]) ] 
 

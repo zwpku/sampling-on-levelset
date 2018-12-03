@@ -25,11 +25,15 @@ int tot_step ;
 int n_bins ;
 
 double h, beta , noise_coeff, dt, eps_tol ;
+/*
+ * c2=c^2, c4=c^4
+ */
 double c, c2, c4 ;
 double bin_width, AA ;
 
 vector<double> state, counter_of_each_bin ;
 
+// the reaction coordinate function 
 double xi(vector<double> & x)
 {
   return 0.5 * (x[0] * x[0] / c2 + x[1] * x[1] - 1.0) ;
@@ -39,6 +43,10 @@ double xi(vector<double> & x)
 // A =  (0 , AA)
 //      (-AA, 0)
 // 
+
+/*
+ * vector field of the flow map
+ */
 void f(vector<double> & x, vector<double> & force)
 {
   double tmp ;
@@ -47,6 +55,12 @@ void f(vector<double> & x, vector<double> & force)
   force[1] = -tmp * (AA * x[0] / c2 + x[1]) ;
 }
 
+/*
+ * Compute the projection map $\Theta(state)$.
+ *
+ * The ODE is solved using the Runge-Kutta method. 
+ *
+ */
 void theta_projection(vector<double> & state)
 {
   double eps, cdt ;
@@ -70,22 +84,37 @@ void theta_projection(vector<double> & state)
     state[1] += cdt * (2.0 / 9 * k1[1] + 1.0 / 3 * k2[1] + 4.0 / 9 * k3[1]) ;
     step ++ ;
     eps = fabs(xi(state)) ;
-    // slightly increase the time step-size 
+    // slightly increase the time step-size
     cdt *= 1.05 ;
   }
   tot_step += step ;
 }
 
+/*
+ * Numerical scheme using the projection map $\Theta$
+ *
+ */
 void update_state_flow_map(vector<double> & state )
 {
   double r ;
+  /* 
+   * Step 1: update the state 
+   * Notice that, in our example, potential U=0 and matrix a = id.
+   */
   for (int i = 0 ; i < 2 ; i ++)
   {
     r = gennor(0, 1) ;
     state[i] = state[i] + noise_coeff * r ;
   }
+  /* 
+   * Step 2: projection using the map $\Theta$.
+   */
   theta_projection(state) ;
 }
+
+/*
+ * Scheme using projection along geodesic curves
+ */
 
 void update_state_orthogonal_projection(vector<double> & x, double prev_angle )
 {
@@ -94,13 +123,24 @@ void update_state_orthogonal_projection(vector<double> & x, double prev_angle )
   vector<double> xx ;
 
   double r ;
+
+  /*
+   * Step 1: update the state
+   */
   for (int i = 0 ; i < 2 ; i ++)
   {
     r = gennor(0, 1) ;
     x[i] = x[i] + noise_coeff * r ;
   }
 
+  /*
+   * Solve the optimization problem, parametrized by the angle theta
+   */
+
+  // initialize using the solution from the previous step
   angle = prev_angle ;
+
+  // derivative of the objective function 
   df = (1 - c2) * 0.5 * sin(2 * angle) + c * x[0] * sin(angle) - x[1] * cos(angle) ;
 
   eps = fabs(df) ;
@@ -108,11 +148,16 @@ void update_state_orthogonal_projection(vector<double> & x, double prev_angle )
   xx.resize(2) ;
   while (eps > eps_tol)
   {
+    // gradient descent
     angle -= df * dt ;
+    // compute the derivative of the objective function 
     df = (1 - c2) * 0.5 * sin(2 * angle) + c * x[0] * sin(angle) - x[1] * cos(angle) ;
     xx[0] = c * cos(angle) ; xx[1] = sin(angle) ;
 
-    // check convergence based on 1) derivative; 2) orthogonal condition
+    /* 
+     * Check convergence based on 
+     * 1) derivative; 2) orthogonal condition
+     */
     eps = max( fabs(df), fabs(xx[1] * (x[0]-xx[0]) - xx[0]/c2 * (x[1] - xx[1])) ) ;
     step ++ ;
   }
@@ -120,6 +165,9 @@ void update_state_orthogonal_projection(vector<double> & x, double prev_angle )
   x = xx; tot_step += step ;
 }
 
+/*
+ * Euler-Maruyama discretization of the SDE
+ */
 void update_state_euler_sde(vector<double> & x )
 {
   double r1, r2 ;
@@ -168,8 +216,11 @@ int main ( int argc, char * argv[] )
   cout << "0: \\Theta\n1: \\Theta^{A}\n2: \\Pi\n3: E-M\n" << "input scheme id= " ;
   cin >> scheme_id  ;
 
+  /*
+   * initialize the total time T and the step-size h.
+   */
   switch (scheme_id) {
-    case 0 :
+    case 0 : 
       T = 50000 ;
       h = 0.01 ;
       break ;
@@ -186,17 +237,25 @@ int main ( int argc, char * argv[] )
       h = 0.0001 ;
       break ;
   }
+
+  // compute the total steps
   n = int(T / h) ;
   output_every_step = 1000 ;
+  // step-size in solving ODE or optimization 
   dt = 0.1 ;
   beta = 1.0 ;
+
   c = 3.0 ;
   c2 = c*c ;
   c4 = c2 * c2 ;
+
   eps_tol = 1e-7 ;
   tot_step = 0 ; 
   n_bins = 50 ;
+
+  // divied [0, 2pi] to n_bins with equal width
   bin_width = 2 * pi / n_bins ;
+
   counter_of_each_bin.resize(n_bins,0) ;
 
   init_rand_generator();
@@ -238,6 +297,8 @@ int main ( int argc, char * argv[] )
 	update_state_euler_sde(state) ;
 	break ;
     }
+
+    //compute histgram during the simulation
     angle = atan2(state[1], state[0] / c) ;
     // change angle to [0, 2*pi]
     if (angle < 0) angle = 2 * pi + angle ;
