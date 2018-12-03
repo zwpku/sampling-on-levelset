@@ -13,7 +13,7 @@ These codes have been used in the paper:
 ```
 	git clone https://github.com/zwpku/sampling-on-levelset.git
 ```
-The code should be avaiable in the directory ./sampling-on-levelset
+The code should be available in the directory ./sampling-on-levelset
 
 2. Enter the directory containing source files.
 
@@ -42,13 +42,13 @@ The code should be avaiable in the directory ./sampling-on-levelset
 
 	- [vec_field.py](./plot-scripts/vec_field.py): plot the streamlines of different projection maps
 
-	- [path_check_and_scatter_plot.py](./plot-scripts/path_check_and_scatter_plot.py): scatter plot for the states sampled using the Euler-Maruyama discretization
+	- [path_check_and_scatter_plot.py](./plot-scripts/path_check_and_scatter_plot.py): scatter plot of the states sampled using the Euler-Maruyama discretization
 
 ## USAGE
-1.   Supposing the current directory is ./sampling-on-levelset, create directories for data and figures
+1.   Suppose the current directory is ./sampling-on-levelset. Create directories for data and figures
 
 ```
-    mkdir fig data
+    mkdir data fig
 ```
 
 2.   Under the [src](./src) directory, run the program gen_path to generate data using different schemes. Data will be stored in ./data
