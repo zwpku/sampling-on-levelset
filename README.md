@@ -32,14 +32,16 @@ These codes have been used in the paper
 1. src (c/cpp codes)
 
      - gen_path.cpp: 
-        	implementation of different sampling schemes on an ellipse in R<sup>2</sup>.
+
+        	  implementation of different sampling schemes on an ellipse in R<sup>2</sup>.
 
      - com.c, linpack.c, ranlib.c, ranlib.h: 
-        	borrowed from the package [RANLIB.C](http://www.netlib.org/random/) (file: [ranlib.c.tar.gz](http://www.netlib.org/random/ranlib.c.tar.gz)).
+
+        	  needed to generate random numbers, borrowed from the package [RANLIB.C](http://www.netlib.org/random/) (file: [ranlib.c.tar.gz](http://www.netlib.org/random/ranlib.c.tar.gz)).
      
 2. plot-scripts (python scripts for generating figures)
 
-        - elliptic.py:  illustration for the effects of different projection maps
+	- elliptic.py:  illustration for the effects of different projection maps
 
 	- plot_bin_from_traj.py: output density profiles for 3 different schemes
 
