@@ -221,8 +221,8 @@ int main ( int argc, char * argv[] )
    */
   switch (scheme_id) {
     case 0 : 
-      T = 50000 ;
-      h = 0.01 ;
+      T = 1000 ;
+      h = 0.001 ;
       break ;
    case 1 :
       T = 30000 ;
@@ -249,7 +249,8 @@ int main ( int argc, char * argv[] )
   c2 = c*c ;
   c4 = c2 * c2 ;
 
-  eps_tol = 1e-7 ;
+//  eps_tol = 1e-7 ;
+  eps_tol = 1e-12 ;
   tot_step = 0 ; 
   n_bins = 50 ;
 
