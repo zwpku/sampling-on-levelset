@@ -25,11 +25,15 @@ int tot_step ;
 int n_bins ;
 
 double h, beta , noise_coeff, dt, eps_tol ;
+
 /*
  * c2=c^2, c4=c^4
  */
 double c, c2, c4 ;
 double bin_width, AA ;
+
+double mean_xi_distance ;
+double pot_coeff ; 
 
 vector<double> state, counter_of_each_bin ;
 
@@ -37,6 +41,22 @@ vector<double> state, counter_of_each_bin ;
 double xi(vector<double> & x)
 {
   return 0.5 * (x[0] * x[0] / c2 + x[1] * x[1] - 1.0) ;
+}
+
+double U(vector<double> & x)
+{
+  double tmp ;
+  tmp = x[0] - c ;
+//  tmp = x[1] - 1.0 ;
+  return  pot_coeff * tmp * tmp * 0.5 ;
+}
+
+double grad_U(vector<double> & x, vector<double> & grad)
+{
+  double tmp ;
+  tmp = x[0] - c;
+//  tmp = x[1] - 1.0 ;
+  grad[0] = pot_coeff * tmp ; grad[1] = 0.0 ;
 }
 
 // non reversible matrix:
@@ -55,6 +75,11 @@ void f(vector<double> & x, vector<double> & force)
   force[1] = -tmp * (AA * x[0] / c2 + x[1]) ;
 }
 
+double norm(vector<double> & x)
+{
+  return sqrt(x[0] * x[0] + x[1] * x[1]) ;
+}
+
 /*
  * Compute the projection map $\Theta(state)$.
  *
@@ -63,7 +88,7 @@ void f(vector<double> & x, vector<double> & force)
  */
 void theta_projection(vector<double> & state)
 {
-  double eps, cdt ;
+  double eps, cdt , eps_old ;
   int step ;
   vector<double> x, k1, k2, k3 ;
 
@@ -74,6 +99,7 @@ void theta_projection(vector<double> & state)
   cdt = dt ;
   while (eps > eps_tol) // Runge-Kutta method
   {
+    eps_old = eps ;
     x = state ;
     f(x, k1) ;
     x[0] = state[0] + 0.5 * cdt * k1[0] ; x[1] = state[1] + 0.5 * cdt * k1[1] ;
@@ -84,8 +110,8 @@ void theta_projection(vector<double> & state)
     state[1] += cdt * (2.0 / 9 * k1[1] + 1.0 / 3 * k2[1] + 4.0 / 9 * k3[1]) ;
     step ++ ;
     eps = fabs(xi(state)) ;
-    // slightly increase the time step-size
-    cdt *= 1.05 ;
+
+//    printf("eps=%.4e\t%.4e\t%.3f\n", eps, norm(k3) * norm(k3), 1 - norm(k3) / eps * (norm(k3) / eps) * cdt  ) ;
   }
   tot_step += step ;
 }
@@ -96,16 +122,23 @@ void theta_projection(vector<double> & state)
  */
 void update_state_flow_map(vector<double> & state )
 {
+  vector<double> grad ;
+  grad.resize(2) ;
+
   double r ;
   /* 
    * Step 1: update the state 
-   * Notice that, in our example, potential U=0 and matrix a = id.
+   * Notice that, in our example, matrix a = id.
    */
+
+  grad_U(state, grad) ;
   for (int i = 0 ; i < 2 ; i ++)
   {
     r = gennor(0, 1) ;
-    state[i] = state[i] + noise_coeff * r ;
+    state[i] = state[i] - grad[i] * h + noise_coeff * r ;
   }
+
+  mean_xi_distance += fabs(xi(state)) ;
   /* 
    * Step 2: projection using the map $\Theta$.
    */
@@ -221,8 +254,8 @@ int main ( int argc, char * argv[] )
    */
   switch (scheme_id) {
     case 0 : 
-      T = 1000 ;
-      h = 0.001 ;
+      n = 5000000 ;
+      h = 0.010 ;
       break ;
    case 1 :
       T = 30000 ;
@@ -239,18 +272,20 @@ int main ( int argc, char * argv[] )
   }
 
   // compute the total steps
-  n = int(T / h) ;
+  T = n * h ;
   output_every_step = 1000 ;
   // step-size in solving ODE or optimization 
-  dt = 0.1 ;
+  dt = 0.8 ;
   beta = 1.0 ;
+  mean_xi_distance = 0 ;
+  pot_coeff = 5.0 ;
 
   c = 3.0 ;
   c2 = c*c ;
   c4 = c2 * c2 ;
 
 //  eps_tol = 1e-7 ;
-  eps_tol = 1e-12 ;
+  eps_tol = 1e-8 ;
   tot_step = 0 ; 
   n_bins = 50 ;
 
@@ -310,6 +345,7 @@ int main ( int argc, char * argv[] )
   out_file.close() ;
 
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
+  printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
 
   sprintf(buf, "../data/counter_%d.txt", scheme_id) ;
   out_file.open(buf) ;

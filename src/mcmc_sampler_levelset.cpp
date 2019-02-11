@@ -27,6 +27,8 @@ int n_bins ;
 double h, beta , noise_coeff ; 
 
 double eps_tol, reverse_tol, newton_grad_tol ;
+double mean_xi_distance ;
+double pot_coeff ; 
 
 int newton_max_step ;
 
@@ -51,6 +53,22 @@ void grad_xi(vector<double> & x, vector<double> & grad)
 {
   grad[0] = x[0] / c2 ;
   grad[1] = x[1] ;
+}
+
+double U(vector<double> & x)
+{
+  double tmp ;
+  tmp = x[0] - c ;
+//  tmp = x[1] - 1.0 ;
+  return  pot_coeff * tmp * tmp * 0.5 ;
+}
+
+double grad_U(vector<double> & x, vector<double> & grad)
+{
+  double tmp ;
+  tmp = x[0] - c;
+//  tmp = x[1] - 1.0 ;
+  grad[0] = pot_coeff * tmp ; grad[1] = 0.0 ;
 }
 
 double vec_dot(vector<double> & v1, vector<double> & v2) 
@@ -157,6 +175,8 @@ void update_state(vector<double> & state )
     tmp_state[i] = state[i] + noise_coeff * r * tangent_v[i] ;
   }
 
+  mean_xi_distance += fabs(xi(tmp_state)) ;
+
   /* 
    * Step 2: projection by Newton-method.
    */
@@ -176,7 +196,7 @@ void update_state(vector<double> & state )
   tangent_v[0] = - grad_vec[1] / norm ;
   tangent_v[1] = grad_vec[0] / norm ;
   r1 = (vec_dot(tangent_v, state) - vec_dot(tangent_v, y_state)) / noise_coeff ;
-  accept_prob = len_grad_xi(state) / len_grad_xi(y_state) * exp((r * r - r1 * r1) * 0.5) ;
+  accept_prob = exp(-beta * (U(y_state) - U(state))) * len_grad_xi(state) / len_grad_xi(y_state) * exp((r * r - r1 * r1) * 0.5) ;
   if (accept_prob > 1.0) accept_prob = 1.0 ;
   tmp = ranf() ;
   if (tmp > accept_prob) 
@@ -232,13 +252,14 @@ int main ( int argc, char * argv[] )
   ofstream out_file ;
   int idx ;
   int output_every_step ;
-  double angle , T;
+  double angle , T ;
 
   clock_t start , end ;
 
   n = 5000000 ;
-  h = 1.00 ;
+  h = 5.00 ;
   T = n * h ;
+  pot_coeff = 10.0 ;
 
   // compute the total steps
   output_every_step = 1000 ;
@@ -252,14 +273,16 @@ int main ( int argc, char * argv[] )
 //  eps_tol = 1e-7 ;
   eps_tol = 1e-12 ;
   newton_grad_tol = 1e-7 ; 
-  newton_max_step = 100 ;
-  reverse_tol = 1e-12 ;
+  newton_max_step = 10 ;
+  reverse_tol = 1e-10 ;
 
   tot_step = 0 ; 
   forward_newton_counter = 0 ;
   backward_newton_counter = 0 ;
   metropolis_counter = 0 ;
   reverse_check_counter = 0 ;
+
+  mean_xi_distance = 0 ;
 
   n_bins = 50 ;
 
@@ -307,9 +330,10 @@ int main ( int argc, char * argv[] )
   int tot_rej ;
   out_file.close() ;
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
+  printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter ;
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tTotal\n") ;
-  printf("\t\t %.3f\t%.3f\t%.4f\t%.4f\t%.4f\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, tot_rej * 1.0 / n) ;
+  printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, tot_rej * 1.0 / n) ;
 
   sprintf(buf, "../data/counter_mcmc.txt") ;
   out_file.open(buf) ;

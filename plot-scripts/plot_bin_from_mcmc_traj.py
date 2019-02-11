@@ -25,7 +25,7 @@ angle_vec = np.linspace( bin_width * 0.5, 2*pi-bin_width*0.5, n_bin, endpoint=Tr
 axs.plot(angle_vec, counter_data, color='k',linewidth=1.5, label=r'empirical') 
 axs.axhline(1.0/(2*pi), 0, 2*pi, color='k', linestyle=':', label=r'density of $\mu_1$')
 axs.set_xlim(0, 2 * pi)
-axs.set_ylim(0.05, 0.35)
+#axs.set_ylim(0.05, 0.35)
 axs.set_xticks([0, pi/2, pi, pi*1.5, 2*pi]) 
 axs.set_xticklabels(['$0$', r'$\pi/2$', r'$\pi$', r'$3\pi/2$', r'$2\pi$'])
 axs.set_yticks([0.1, 0.2, 0.3])
