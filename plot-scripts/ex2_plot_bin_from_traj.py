@@ -10,11 +10,20 @@ from math import pi
 from scipy.special import erf
 import matplotlib.gridspec as gridspec
 
+def int_norm():
+  nn = 5000
+  dx = pi / nn 
+  s = 0 
+  for i in range(nn):
+      x = -pi * 0.5 + dx * (i + 0.5)
+      s += exp(-x * x * 0.5 / stiff_eps) * cos(x)
+  return s * dx
+
 plt.figure(figsize=(8, 4))
 axs = plt.gca()
 
-id_mat_a_flag = 1
-stiff_eps = 0.09
+id_mat_a_flag = 0
+stiff_eps = 0.010
 
 data_file = open('../data/phi_counter_%d.txt' % id_mat_a_flag , 'r')
 
@@ -25,7 +34,7 @@ angle_vec = np.linspace( bin_width * 0.5, 2*pi-bin_width*0.5, n_bin, endpoint=Tr
 axs.plot(angle_vec, counter_data, color='k',linewidth=1.5, label=r'empirical') 
 axs.axhline(1.0/(2*pi), 0, 2*pi, color='k', linestyle=':', label=r'density of $\varphi$')
 axs.set_xlim(0, 2 * pi)
-#axs.set_ylim(0.05, 0.35)
+axs.set_ylim(0.05, 0.20)
 axs.set_xticks([0, pi/2, pi, pi*1.5, 2*pi]) 
 axs.set_xticklabels(['$0$', r'$\pi/2$', r'$\pi$', r'$3\pi/2$', r'$2\pi$'])
 #axs.set_yticks([0.1, 0.2, 0.3])
@@ -49,11 +58,12 @@ angle_vec = np.linspace( -pi * 0.5 + bin_width * 0.5, pi * 0.5 - bin_width*0.5, 
 axs.plot(angle_vec, counter_data, color='k',linewidth=1.5, label=r'empirical') 
 
 normal_z = sqrt(2 * pi * stiff_eps) * erf( pi/(2 * sqrt(2*stiff_eps)) )
+normal_z = int_norm()
 print 'normalization constant Z=%.4e\n' % normal_z
-theta_density = [ exp(-x*x*0.5/stiff_eps) / normal_z for x in angle_vec] 
+theta_density = [ exp(-x*x*0.5/stiff_eps) / normal_z * cos(x) for x in angle_vec] 
 axs.plot(angle_vec, theta_density, color='k',linestyle=':', label=r'density of $\theta$') 
 axs.set_xlim(-pi * 0.5, pi * 0.5)
-#axs.set_ylim(0.05, 0.35)
+#axs.set_ylim(-0.05, 1.48)
 axs.set_xticks([-pi/2, -pi/4, 0, pi/4, pi/2]) 
 axs.set_xticklabels([r'$-\pi/2$', r'$-\pi/4$', r'$0$', r'$\pi/4$', r'$\pi/2$'])
 #axs.set_yticks([0.1, 0.2, 0.3])

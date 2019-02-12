@@ -74,6 +74,11 @@ double compute_phi_angle(vector<double> & x)
   return tmp ;
 }
 
+double l2_norm(vector<double> & x)
+{
+  return sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) ;
+}
+
 /*
  * Compute the projection map $\Theta(state)$.
  *
@@ -82,7 +87,7 @@ double compute_phi_angle(vector<double> & x)
  */
 void theta_projection(vector<double> & state)
 {
-  double eps, cdt ;
+  double eps, cdt, eps_old ;
   int step ;
   vector<double> x, k1, k2, k3 ;
 
@@ -94,6 +99,7 @@ void theta_projection(vector<double> & state)
     cdt = dt ;
     while (eps > eps_tol) // Runge-Kutta method
     {
+      eps_old = eps ;
       x = state ;
       f(x, k1) ;
       x[0] = state[0] + 0.5 * cdt * k1[0] ; 
@@ -104,15 +110,23 @@ void theta_projection(vector<double> & state)
       x[1] = state[1] + 0.75 * cdt * k2[1] ;
       x[2] = state[2] + 0.75 * cdt * k2[2] ;
       f(x, k3) ;
+      x = state ;
       state[0] += cdt * (2.0 / 9 * k1[0] + 1.0 / 3 * k2[0] + 4.0 / 9 * k3[0]) ;
       state[1] += cdt * (2.0 / 9 * k1[1] + 1.0 / 3 * k2[1] + 4.0 / 9 * k3[1]) ;
       state[2] += cdt * (2.0 / 9 * k1[2] + 1.0 / 3 * k2[2] + 4.0 / 9 * k3[2]) ;
       step ++ ;
       eps = fabs(xi(state)) ;
+      if (eps > eps_old) // if the state becomes further, we decrease the step-size
+      {
+	printf("eps_old = %.3e\t eps=%.3e\n", eps_old, eps) ;
+	state = x ; 
+	cdt *= 0.95;
+	eps = eps_old ;
+      }
+
 //      printf("\tode step=%d, \teps=%.4e, \tstate: (%.4f, %.4f, %.4f)\n", step, xi(state), state[0], state[1], state[2]) ;
     }
     tot_step += step ;
-//    printf("step=%d\n", step) ;
   } else // when a=id, the projection by flow map is simply the orthogonal projection on the sphere.
   {
     double norm ;
@@ -121,7 +135,6 @@ void theta_projection(vector<double> & state)
     for (int i = 0 ; i < 3 ; i++)
       state[i] = x[i] / norm  ;
   }
-
 }
 
 void compute_matrix_dadx_sigma(vector<double> & x, vector<vector<double> > & sigma, vector<double> & da)
@@ -132,9 +145,10 @@ void compute_matrix_dadx_sigma(vector<double> & x, vector<vector<double> > & sig
     sigma[i].resize(3) ;
 
   norm = sqrt(x[0] * x[0] + x[1] * x[1]) ;
+
   sigma[0][0] = x[0] ; sigma[0][1] = x[1] ; sigma[0][2] = - sqrt(stiff_eps) * x[0] * x[2] / norm ;
   sigma[1][0] = x[1] ; sigma[1][1] = -x[0] ; sigma[1][2] = - sqrt(stiff_eps) * x[1] * x[2] / norm ;
-  sigma[2][0] = x[2] ; sigma[1][1] = 0.0 ; sigma[2][2] = sqrt(stiff_eps) * norm ;
+  sigma[2][0] = x[2] ; sigma[2][1] = 0.0 ; sigma[2][2] = sqrt(stiff_eps) * norm ;
 
   da[0] = stiff_eps * x[0] * x[2] * x[2] / (norm * norm) + (3 - stiff_eps) * x[0] ;
   da[1] = stiff_eps * x[1] * x[2] * x[2] / (norm * norm) + (3 - stiff_eps) * x[1] ;
@@ -165,6 +179,7 @@ void update_state_flow_map(vector<double> & state )
       r = gennor(0, 1) ;
       state[i] = state[i] - 1.0 / stiff_eps * h * theta * grad[i] + noise_coeff * r ;
     }
+//    printf("norm of grad=%.4e\t\n", 1.0 / stiff_eps * theta * l2_norm(grad) );
   } else 
   {
     vector<double> r, dadx ;
@@ -177,15 +192,15 @@ void update_state_flow_map(vector<double> & state )
       r[i] = gennor(0,1) ;
     for (int i = 0 ; i < 3 ; i ++)
     {
+      tmp = 0;
       for (int j = 0; j < 3 ; j ++)
 	tmp += sigma[i][j] * r[j] ;
       state[i] = state[i] + (-theta * grad[i] + 1.0 / beta * dadx[i]) * h + noise_coeff * tmp ;
     }
+//    printf("norm of grad=%.4e\t norm of dadx=%.4e\t\n", theta * l2_norm(grad), l2_norm(dadx) );
 
 //    printf("\tafter update: state=(%.4f, %.4f, %.4f)\n", state[0], state[1], state[2]) ;
   }
-
-//  printf( "eps=%.4e\n", fabs(xi(state)) ) ;
 
   mean_xi_distance += fabs(xi(state)) ;
   /* 
@@ -229,9 +244,9 @@ int main ( int argc, char * argv[] )
   cin >> id_mat_a_flag ;
 
   beta = 1.0 ;
-  stiff_eps = 0.09 ;
-  n = 1000000 ;
-  h = 0.00001 ;
+  stiff_eps = 0.010 ;
+  n = (int) 4e5 ;
+  h = 0.010 ;
   T = n * h ;
   output_every_step = 1000 ;
   mean_xi_distance = 0 ;
@@ -240,9 +255,9 @@ int main ( int argc, char * argv[] )
   dt = 0.01 ;
 
 //  eps_tol = 1e-7 ;
-  eps_tol = 1e-12 ;
+  eps_tol = 1e-10 ;
   tot_step = 0 ; 
-  n_bins = 50 ;
+  n_bins = 500 ;
 
   // divied [-pi/2, pi/2] to n_bins with equal width
   bin_width_theta = pi / n_bins ;
@@ -272,9 +287,9 @@ int main ( int argc, char * argv[] )
   for (int i = 0 ; i < n ; i ++)
   {
     if (i % output_every_step == 0)
+    {
       out_file << state[0] << ' ' << state[1] << ' ' << state[2] << endl ;
-
-//    cout << state[0] << ' ' << state[1] << ' ' << state[2] << endl ;
+    }
 
     update_state_flow_map(state) ;
 
