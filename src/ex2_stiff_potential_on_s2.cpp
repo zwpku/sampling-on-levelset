@@ -22,7 +22,7 @@ const double pi = atan(1) * 4 ;
 
 int n, id_mat_a_flag ;
 int tot_step ;
-int n_bins ;
+int n_bins_theta, n_bins_phi ;
 
 double h, beta , noise_coeff, dt, eps_tol , stiff_eps ;
 
@@ -91,7 +91,9 @@ void theta_projection(vector<double> & state)
   int step ;
   vector<double> x, k1, k2, k3 ;
 
-  if (id_mat_a_flag == 0) // solving ODE is neccessary only when a is non-identity
+ // In fact, in both case, the projections by flow maps are simply the orthogonal projection on the sphere.
+  /*
+  if (id_mat_a_flag == 0) 
   {
     k1.resize(3) ; k2.resize(3) ; k3.resize(3) ;
     eps = fabs(xi(state)) ;
@@ -123,18 +125,17 @@ void theta_projection(vector<double> & state)
 	cdt *= 0.95;
 	eps = eps_old ;
       }
-
 //      printf("\tode step=%d, \teps=%.4e, \tstate: (%.4f, %.4f, %.4f)\n", step, xi(state), state[0], state[1], state[2]) ;
     }
     tot_step += step ;
-  } else // when a=id, the projection by flow map is simply the orthogonal projection on the sphere.
-  {
+  } 
+  */
+
     double norm ;
     x = state ;
     norm = sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) ;
     for (int i = 0 ; i < 3 ; i++)
       state[i] = x[i] / norm  ;
-  }
 }
 
 void compute_matrix_dadx_sigma(vector<double> & x, vector<vector<double> > & sigma, vector<double> & da)
@@ -232,7 +233,7 @@ int main ( int argc, char * argv[] )
 {
   char buf[50] ;
   ofstream out_file ;
-  int idx ;
+  int idx , large_step_size_flag ;
   int output_every_step ;
   double theta_angle, phi_angle, T;
 
@@ -244,9 +245,18 @@ int main ( int argc, char * argv[] )
   cin >> id_mat_a_flag ;
 
   beta = 1.0 ;
-  stiff_eps = 0.010 ;
-  n = (int) 4e5 ;
-  h = 0.010 ;
+  stiff_eps = 0.005 ;
+  n = (int) 1e7 ;
+  large_step_size_flag = 1 ;
+  if (id_mat_a_flag == 0)
+    h = 0.01 ;
+  else {
+    printf("large step-size (h=0.001) or not (h=0.0002)? (0/1)\n") ;
+    cin >> large_step_size_flag ;
+    if (large_step_size_flag == 1)
+      h = 0.005 ;
+    else h=0.0002 ;
+  }
   T = n * h ;
   output_every_step = 1000 ;
   mean_xi_distance = 0 ;
@@ -257,15 +267,16 @@ int main ( int argc, char * argv[] )
 //  eps_tol = 1e-7 ;
   eps_tol = 1e-10 ;
   tot_step = 0 ; 
-  n_bins = 500 ;
+  n_bins_theta = 500 ;
+  n_bins_phi = 100 ;
 
-  // divied [-pi/2, pi/2] to n_bins with equal width
-  bin_width_theta = pi / n_bins ;
-  // divied [0, 2pi] to n_bins with equal width
-  bin_width_phi = 2 * pi / n_bins ;
+  // divied [-pi/2, pi/2] to n_bins_theta with equal width
+  bin_width_theta = pi / n_bins_theta ;
+  // divied [0, 2pi] to n_bins_phi with equal width
+  bin_width_phi = 2 * pi / n_bins_phi ;
 
-  theta_counter_of_each_bin.resize(n_bins,0) ;
-  phi_counter_of_each_bin.resize(n_bins,0) ;
+  theta_counter_of_each_bin.resize(n_bins_theta,0) ;
+  phi_counter_of_each_bin.resize(n_bins_phi,0) ;
 
   init_rand_generator();
   noise_coeff = sqrt(2.0 / beta * h) ;
@@ -278,7 +289,7 @@ int main ( int argc, char * argv[] )
 
   printf("n=%d\t\th=%.2e\tT=%.2f\t\tNo. of output states=%d\n", n, h, T, n / output_every_step) ;
 
-  sprintf(buf, "../data/ex2_traj_%d.txt", id_mat_a_flag) ;
+  sprintf(buf, "../data/ex2_traj_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
 
   out_file.open(buf) ;
 
@@ -298,11 +309,6 @@ int main ( int argc, char * argv[] )
     // phi in [0, 2pi]
     phi_angle = compute_phi_angle(state) ;
     idx = int (phi_angle / bin_width_phi) ;
-    if ((idx >= n_bins) || (idx < 0))  
-    {
-      printf("state=(%.4f, %.4f, %.4f)\n", state[0], state[1], state[2]) ;
-      printf("phi_angle = %.4f\t idx=%d\n", phi_angle, idx) ;
-    }
     phi_counter_of_each_bin[idx] ++ ;
 
     // theta in [-pi/2, pi/2]
@@ -316,20 +322,20 @@ int main ( int argc, char * argv[] )
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
 
-  sprintf(buf, "../data/theta_counter_%d.txt", id_mat_a_flag) ;
+  sprintf(buf, "../data/theta_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
   out_file.open(buf) ;
-  out_file << n << ' ' << n_bins << endl ;
-  for (int i = 0 ; i < n_bins ; i++)
+  out_file << n << ' ' << n_bins_theta << endl ;
+  for (int i = 0 ; i < n_bins_theta ; i++)
   {
     out_file << theta_counter_of_each_bin[i] << ' ';
   }
   out_file << endl ;
   out_file.close() ;
 
-  sprintf(buf, "../data/phi_counter_%d.txt", id_mat_a_flag) ;
+  sprintf(buf, "../data/phi_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
   out_file.open(buf) ;
-  out_file << n << ' ' << n_bins << endl ;
-  for (int i = 0 ; i < n_bins ; i++)
+  out_file << n << ' ' << n_bins_phi << endl ;
+  for (int i = 0 ; i < n_bins_phi ; i++)
   {
     out_file << phi_counter_of_each_bin[i] << ' ';
   }
