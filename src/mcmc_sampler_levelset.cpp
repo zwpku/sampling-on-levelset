@@ -44,12 +44,14 @@ int forward_newton_counter, metropolis_counter, backward_newton_counter, reverse
 
 double bin_width ;
 
-vector<double> state, tangent_v, tmp_state, grad_vec, counter_of_each_bin ;
+vector<double> state, tmp_state, counter_of_each_bin ;
+
+vector<vector<double> > grad_vec , tangent_vec_array ;
 
 // arrays for QR decomposition
-double * qr_tau, * qr_work , * qr_mat ;
+double * qr_tau, * qr_work , * qr_grad_mat ;
 
-double * mat_a, * linear_sol; 
+double * mat_a, * linear_sol ; 
 int *ipiv ;
 
 // 
@@ -110,17 +112,21 @@ void grad_xi(vector<double> & x, vector<vector<double> > & grad)
 
 void allocate_mem()
 {
-  qr_mat = (double *) malloc( (d * k) * sizeof(double) ) ;
+  qr_grad_mat = (double *) malloc( (d * d) * sizeof(double) ) ;
   qr_work = (double *) malloc( k * sizeof(double) ) ;
   qr_tau = (double *) malloc( k * sizeof(double) ) ;
   mat_a = (double *) malloc( (k * k) * sizeof(double) ) ;
   ipiv = (int *) malloc( k * sizeof(int) ) ;
   linear_sol = (double *) malloc( k * sizeof(double) ) ;
+
+  tangent_vec_array.resize(d-k) ;
+  for (int i = 0 ; i < d - k ; i++)
+    tangent_vec_array[i].resize(d) ;
 }
 
-void deallocate_meme() 
+void deallocate_mem() 
 {
-  free(qr_mat) ;
+  free(qr_grad_mat) ;
   free(qr_work) ;
   free(qr_tau) ;
   free(mat_a) ;
@@ -128,16 +134,26 @@ void deallocate_meme()
   free(linear_sol) ;
 }
 
-void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & tangent_vec)
+double vec_dot(vector<double> & v1, vector<double> & v2) 
+{
+  double s ;
+  s = 0 ;
+  for (int i = 0 ; i < d; i ++)
+    s += v1[i] * v2[i] ;
+  return s;
+}
+
+void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
 {
   int lda , lwork, info ;
-  lda = d ;
 
-  for (int i = 0 ; i < d ; i ++)
-    for (int j = 0 ; j < k; j ++)
-      qr_mat[i * k + j] = grad[j][i] ;
+  lda = d ;
+  lwork = k ;
+  for (int j = 0 ; j < k; j ++)
+    for (int i = 0 ; i < d ; i ++)
+      qr_grad_mat[j * d + i] = grad[j][i] ;
       
-  dgeqrf_(&d, &k, qr_mat, &lda, qr_tau, qr_work, &lwork, &info) ;
+  dgeqrf_(&d, &k, qr_grad_mat, &lda, qr_tau, qr_work, &lwork, &info) ;
 
   if (info != 0)
   {
@@ -145,13 +161,27 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & tangent
     exit(1) ;
   }
 
-  dorgqr_(&d, &k, &k, qr_mat, &d, qr_tau, qr_work, &lwork, &info) ;
+  lwork = d ;
+  dorgqr_(&d, &d, &k, qr_grad_mat, &d, qr_tau, qr_work, &lwork, &info) ;
 
   if (info != 0)
   {
     printf("return value of QR (step 2) is wrong: info=%d\n", info) ;
     exit(1) ;
   }
+
+  // store the (d-k) tangent vectors
+  for (int i = 0 ; i < d-k; i ++)
+  {
+    for (int j = 0 ; j < d; j ++)
+      tangent_vec_array[i][j] = qr_grad_mat[(k+i)*d + j] ;
+  }
+
+  /* check orthogonality
+  for (int i = 0 ; i < d-k; i ++)
+    for (int j = i ; j < d-k; j ++)
+  printf("<%d, %d>=%.4e\n", i, j, vec_dot(tangent_vec_array[i], tangent_vec_array[j])) ;
+  */
 }
 
 void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
@@ -167,17 +197,8 @@ void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
     printf("return value of DGESV is wrong: info=%d\n", info) ;
     exit(1) ;
   }
-
 }
 
-double vec_dot(vector<double> & v1, vector<double> & v2) 
-{
-  double s ;
-  s = 0 ;
-  for (int i = 0 ; i < d; i ++)
-    s += v1[i] * v2[i] ;
-  return s;
-}
 
 /*
  * Compute the projection by Newton-method.
@@ -385,10 +406,24 @@ int main ( int argc, char * argv[] )
   for (int i = 0 ; i < N; i++)
     state[i * N] = 1.0 ;
 
+  /* 
+   * gradient vector of xi
+   * dimension: k * d
+   */
+  grad_vec.resize(k) ;
+  for (int i = 0 ; i < k; i ++)
+    grad_vec[i].resize(d) ;
+
+  grad_xi(state, grad_vec) ;
+
+  allocate_mem() ;
+
   start = clock() ;
 
-  printf("Total time = %.2f\nh=%.2e\nn=%.1e\nNo. of output states=%d\n", T, h, n *1.0, n / output_every_step) ;
-  printf("SO(%d),\t\td=%d\t\tk=%d\n", N, d, k) ;
+  printf("\nTotal time = %.2f\nh=%.2e\nn=%.1e\nNo. of output states=%d\n", T, h, n *1.0, n / output_every_step) ;
+  printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
+
+  qr_decomp(grad_vec, tangent_vec_array) ;
 
   for (int i = 0 ; i < n ; i ++)
   {
@@ -405,6 +440,8 @@ int main ( int argc, char * argv[] )
 
   end = clock() ;
   printf("\n\nRuntime : %4.2f sec.\n\n", (end - start) * 1.0 / CLOCKS_PER_SEC ) ;
+
+  deallocate_mem() ;
 
   return 0; 
 }
