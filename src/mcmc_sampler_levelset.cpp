@@ -35,7 +35,7 @@ int n_bins ;
 
 double h, beta , noise_coeff ; 
 
-double eps_tol, reverse_tol, newton_grad_tol ;
+double eps_tol, reverse_tol, newton_grad_tol , size_s ;
 
 double mean_xi_distance ;
 
@@ -45,9 +45,9 @@ int forward_newton_counter, metropolis_counter, backward_newton_counter, reverse
 
 double bin_width ;
 
-vector<double> state, tmp_state, counter_of_each_bin ;
+vector<double> state, v_vec, v_vec_prime, y_state, tmp_state, counter_of_each_bin ;
 
-vector<vector<double> > grad_vec , tangent_vec_array ;
+vector<vector<double> > grad_vec , tangent_vec_array, grad_vec_y, tangent_vec_array_y ;
 
 // arrays for QR decomposition
 double * qr_tau, * qr_work , * qr_grad_mat ;
@@ -123,9 +123,24 @@ void allocate_mem()
   ipiv = (int *) malloc( k * sizeof(int) ) ;
   linear_sol = (double *) malloc( k * sizeof(double) ) ;
 
+  // (d-k) orthogonal vectors on the tangent space
   tangent_vec_array.resize(d-k) ;
   for (int i = 0 ; i < d - k ; i++)
     tangent_vec_array[i].resize(d) ;
+
+  /* 
+   * gradient vector of xi
+   * dimension: k * d
+   */
+  grad_vec.resize(k) ;
+  for (int i = 0 ; i < k; i ++)
+    grad_vec[i].resize(d) ;
+
+  grad_vec_y = grad_vec ;
+  tangent_vec_array_y = tangent_vec_array ;
+
+  v_vec.resize(d) ;
+  v_vec_prime.resize(d) ;
 }
 
 void deallocate_mem() 
@@ -142,7 +157,7 @@ double vec_dot(vector<double> & v1, vector<double> & v2)
 {
   double s ;
   s = 0 ;
-  for (int i = 0 ; i < d; i ++)
+  for (int i = 0 ; i < v1.size(); i ++)
     s += v1[i] * v2[i] ;
   return s;
 }
@@ -232,7 +247,6 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
   printf("QR decomposition finished.\n\n") ;
 
   check_orthognality() ;
-
 }
 
 void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
@@ -247,143 +261,6 @@ void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
     exit(1) ;
   }
 }
-
-
-/*
- * Compute the projection by Newton-method.
- *
-int newton_projection(vector<double> & state, vector<double>& vec, vector<double> & result)
-{
-  double eps, a, tmp ;
-  int step ;
-  vector<double> k1, k2 ;
-
-  k1.resize(2) ;  k2.resize(2) ;  
-
-  a = 0 ; 
-  step = 0 ; 
-  k1 = state ;
-  eps = fabs(xi(k1)) ;
-
-  while (eps > eps_tol)  
-  {
-    grad_xi(k1, k2) ;
-    tmp = vec_dot(k2, vec) ;
-
-    // unsuccessful, if gradient is too small
-    if (fabs(tmp) < newton_grad_tol) 
-    {
-      tot_step += step ;
-      return 0 ;
-    }
-
-    a = a - xi(k1) / tmp ;
-
-    step ++ ;
-    // unsuccessful, if maximal steps are reached
-    if (step > newton_max_step) // not success
-    {
-      tot_step += step ;
-      return 0 ;
-    }
-
-    k1[0] = state[0] + a * vec[0] ;
-    k1[1] = state[1] + a * vec[1] ;
-    eps = fabs(xi(k1)) ;
-  }
-
-  tot_step += step ;
-  result = k1 ;
-
-//  printf("step=%d\teps=%.4e\t %.4e\ta=%.4f\n", step, fabs(xi(state)), eps, a) ;
-  // successful 
-  return 1; 
-}
-
-double dist_xy(vector<double> & x, vector<double> & y)
-{
-  return sqrt( (x[0] - y[0]) * (x[0] - y[0]) + (x[1] - y[1]) * (x[1] - y[1]) ) ;
-}
- */
-
-/*
- * update state by MCMC
- *
-void update_state(vector<double> & state )
-{
-  double r, norm , r1, accept_prob , tmp ;
-  int flag ;
-  vector<double> y_state, yy_state ;
-
-  y_state.resize(2) ;
-  yy_state.resize(2) ;
-  
-  grad_xi(state, grad_vec) ;
-
-  norm = sqrt( vec_dot(grad_vec, grad_vec) ) ;
-
-  // unit tangent vector 
-  tangent_v[0] = - grad_vec[1] / norm ;
-  tangent_v[1] = grad_vec[0] / norm ;
-
-  // generate standard Guassian variable 
-  r = gennor(0, 1) ;
-
-  // a move along tangent vector v
-  for (int i = 0 ; i < 2 ; i ++)
-  {
-    tmp_state[i] = state[i] + noise_coeff * r * tangent_v[i] ;
-  }
-
-  mean_xi_distance += fabs(xi(tmp_state)) ;
-
-   * Step 2: projection by Newton-method.
-  flag = newton_projection(tmp_state, grad_vec, y_state) ;
-
-  if (flag == 0) {
-    forward_newton_counter ++ ;
-    return ;
-  }
-
-   * normal direction at y 
-  grad_xi(y_state, grad_vec) ;
-  norm = sqrt( vec_dot(grad_vec, grad_vec) ) ;
-  // unit tangent vector 
-  tangent_v[0] = - grad_vec[1] / norm ;
-  tangent_v[1] = grad_vec[0] / norm ;
-  r1 = (vec_dot(tangent_v, state) - vec_dot(tangent_v, y_state)) / noise_coeff ;
-  accept_prob = exp(-beta * (U(y_state) - U(state))) * len_grad_xi(state) / len_grad_xi(y_state) * exp((r * r - r1 * r1) * 0.5) ;
-  if (accept_prob > 1.0) accept_prob = 1.0 ;
-  tmp = ranf() ;
-  if (tmp > accept_prob) 
-  {
-    metropolis_counter ++ ;
-    return ;
-  }
-
-  // a move along tangent vector v
-  for (int i = 0 ; i < 2 ; i ++)
-  {
-    tmp_state[i] = y_state[i] + noise_coeff * r1 * tangent_v[i] ;
-  }
-
-  flag = newton_projection(tmp_state, grad_vec, yy_state) ;
-
-  if (flag == 0)
-  {
-    backward_newton_counter ++ ;
-    return ;
-  }
-
-  if (dist_xy(yy_state, state) > reverse_tol) 
-  {
-    reverse_check_counter ++ ;
-    return ;
-  }
-
-  state = y_state ;
-}
-*/
 
 /* 
  * Initialize the seed of random numbers depending on the cpu time 
@@ -403,13 +280,136 @@ void init_rand_generator()
   setall(is1, is2) ;
 }
 
+// randomly generate a tangent vector 
+void generate_v(vector<double> & v_vec) 
+{
+  vector<double> r ;
+  r.resize(d-k) ;
+  for (int i = 0 ; i < d-k; i ++)
+    r[i] = gennor(0, size_s) ;
+
+  for (int i = 0 ; i < d; i ++)
+  {
+    v_vec[i] = 0 ;
+    for (int j = 0 ; j < d-k; j ++)
+      v_vec[i] += r[j] * tangent_vec_array[j][i] ;
+  }
+}
+
+int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
+{
+  int nrhs, info , lda, ldb, step ;
+  double * vec_a, s, eps ;
+  vector<double> tmp_x, tmp_rhs ;
+  vector<vector<double> > tmp_grad_mat ;
+
+  tmp_rhs.resize(k) ;
+  tmp_grad_mat.resize(k) ;
+  for (int i =0; i < k ; i ++)
+    tmp_grad_mat[i].resize(d); 
+
+  // initial solution is set to zero
+  vec_a = (double *) malloc( k * sizeof(double) ) ;
+  for (int i = 0; i < k; i ++)
+    vec_a[i] = 0 ;
+
+  // initial state
+  tmp_x = x0 ;
+  xi(tmp_x, tmp_rhs) ;
+  eps = sqrt(vec_dot(tmp_rhs, tmp_rhs)) ;
+  step = 0 ;
+
+  // Newton iteration method 
+  while (eps > eps_tol)
+  {
+    if (step + 1 > newton_max_step) 
+    {
+      tot_newton_step += step ;
+      return 0 ;
+    }
+
+    // calculate the derivative at current state
+    grad_xi(tmp_x, tmp_grad_mat) ;
+
+    // initialize the matrix mat_a
+    for (int i = 0 ; i < k; i ++)
+      for (int j = 0 ; j < k; j ++)
+      {
+	s = 0 ;
+	for (int i0 = 0; i0 < d; i0++)
+	  s += tmp_grad_mat[i][i0] * Qx[j][i0] ;
+	mat_a[i*k+j] = s ;
+      }
+
+    // right hand side
+    for (int i = 0 ; i < k; i ++)
+      linear_sol[i] = -tmp_rhs[i] ;
+
+    nrhs = 1; lda = k ; ldb = k ; 
+    dgesv_(&k, &nrhs, mat_a, &lda, ipiv, linear_sol, &ldb, &info) ;
+    if (info != 0)
+    {
+      printf("Warning: return value of the linear solver DGESV is wrong: info=%d\n", info) ;
+      tot_newton_step += step + 1 ;
+      return 0 ;
+    }
+
+    // update the coefficient vector a
+    for (int i =0; i < k; i ++)
+      vec_a[i] += linear_sol[i] ;
+
+    step ++ ;
+    for (int i =0 ; i < d; i ++)
+    {
+      s = 0;
+      for (int j = 0 ; j < k ; j++)
+	s += vec_a[j] * Qx[j][i];
+      tmp_x[i] = x0[i] + s;
+    }
+
+    xi(tmp_x, tmp_rhs) ;
+    eps = sqrt(vec_dot(tmp_rhs, tmp_rhs)) ;
+  }
+
+  // Newton iteration is successful if we are here
+  x0 = tmp_x ;
+  tot_newton_step += step ;
+
+  return 1;
+}
+
+void compute_v_prime(vector<double> & state, vector<double> & tmp_state, vector<vector<double> > & tangent_vec_array_y) 
+{
+  double s ;
+  vector<double> state_diff , coeff ;
+  state_diff.resize(d) ;
+  coeff.resize(d-k) ;
+
+  // x-y
+  for (int i = 0; i < d; i ++)
+    state_diff[i] = state[i] - tmp_state[i] ;
+
+  // coefficients corresponding to the orthonormal basis
+  for (int i = 0 ; i < d-k; i++)
+    coeff[i] = vec_dot(state_diff, tangent_vec_array_y[i]) ;
+
+  for (int i =0; i < d; i ++)
+  {
+    s = 0 ;
+    for (int j = 0 ; j < d-k; j ++)
+      s+= coeff[j] * tangent_vec_array_y[j][i];
+    v_vec_prime[i] = s;
+  }
+}
+
 int main ( int argc, char * argv[] ) 
 {
   char buf[50] ;
   ofstream out_file ;
   int idx ;
+  int newton_success_flag ;
   int output_every_step ;
-  double angle , T ;
+  double angle , T , accept_prob , tmp ;
 
   clock_t start , end ;
 
@@ -424,6 +424,7 @@ int main ( int argc, char * argv[] )
 
 //  eps_tol = 1e-7 ;
   eps_tol = 1e-12 ;
+  size_s = 1.0 ;
   newton_grad_tol = 1e-7 ; 
   newton_max_step = 10 ;
   reverse_tol = 1e-10 ;
@@ -455,16 +456,8 @@ int main ( int argc, char * argv[] )
   for (int i = 0 ; i < N; i++)
     state[i * N] = 1.0 ;
 
-  /* 
-   * gradient vector of xi
-   * dimension: k * d
-   */
-  grad_vec.resize(k) ;
-  for (int i = 0 ; i < k; i ++)
-    grad_vec[i].resize(d) ;
-
-  grad_xi(state, grad_vec) ;
-
+  tmp_state.resize(d) ;
+  y_state.resize(d) ;
   allocate_mem() ;
 
   start = clock() ;
@@ -472,11 +465,80 @@ int main ( int argc, char * argv[] )
   printf("\nTotal time = %.2f\nh=%.2e\nn=%.1e\nNo. of output states=%d\n", T, h, n *1.0, n / output_every_step) ;
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
 
+  // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
+  grad_xi(state, grad_vec) ;
+
+  // for the initial state, fine the orthogonal vectors of tangent space by QR decomposition 
   qr_decomp(grad_vec, tangent_vec_array) ;
 
   for (int i = 0 ; i < n ; i ++)
   {
-    //update_state(state) ;
+    // randomly generate a vector on the (d-k)-dimensional tangent space
+    generate_v(v_vec) ;
+
+    // move along tangent vector v
+    for (int i = 0 ; i < d; i ++)
+      tmp_state[i] = state[i] + v_vec[i] ;
+
+    // projection by newton method
+    newton_success_flag = projection_by_Newton(grad_vec, tmp_state) ;
+
+    if (newton_success_flag == 0) // increase the counter, if we didn't find a new state
+    {
+      forward_newton_counter ++ ;
+      continue;
+    }
+
+    /* 
+     * we found a NEW state: tmp_state. Now we do Metropolis-Hasting 
+     *
+     */
+
+    y_state = tmp_state ;
+
+    // compute the Jaccobi (gradient) matrix of xi at the NEW state 
+    grad_xi(y_state, grad_vec_y) ;
+
+    // fine the orthogonal vectors of tangent space (NEW state) by QR decomposition 
+    qr_decomp(grad_vec_y, tangent_vec_array_y) ;
+
+    // decide vector v'
+    compute_v_prime(state, y_state, tangent_vec_array_y) ;
+
+    // density ratio of two vectors v and v'
+    accept_prob = exp(-(vec_dot(v_vec_prime, v_vec_prime) - vec_dot(v_vec, v_vec)) * 0.5 / (size_s * size_s) ) ;
+    if (accept_prob > 1.0) accept_prob = 1.0 ;
+
+    tmp = ranf() ;
+    if (tmp > accept_prob) // rejected 
+    {
+      metropolis_counter ++ ;
+      continue ;
+    }
+
+    /*
+     * We have passed the Metropolis-Hasting check. 
+     * In the following, we do reversibility check.
+     */
+
+    // move state y along tangent vector v'
+    for (int i = 0 ; i < d; i ++)
+      tmp_state[i] = y_state[i] + v_vec_prime[i] ;
+
+    // projection by newton method
+    newton_success_flag = projection_by_Newton(grad_vec_y, tmp_state) ;
+
+    if (newton_success_flag == 0) // increase the counter, if we didn't find a new state
+    {
+      backward_newton_counter ++ ;
+      continue;
+    }
+
+    // move to the new state
+    state = y_state ;
+    // update the gradients and the tangent vectors
+    grad_vec = grad_vec_y ;
+    tangent_vec_array = tangent_vec_array ;
   }
 
   int tot_rej ;
