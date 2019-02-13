@@ -36,6 +36,7 @@ int n_bins ;
 double h, beta , noise_coeff ; 
 
 double eps_tol, reverse_tol, newton_grad_tol ;
+
 double mean_xi_distance ;
 
 int newton_max_step ;
@@ -53,6 +54,9 @@ double * qr_tau, * qr_work , * qr_grad_mat ;
 
 double * mat_a, * linear_sol ; 
 int *ipiv ;
+
+// used for debug
+double orthogonal_tol ;
 
 // 
 // the vector-valued reaction coordinate function: N + N * (N-1) / 2
@@ -113,7 +117,7 @@ void grad_xi(vector<double> & x, vector<vector<double> > & grad)
 void allocate_mem()
 {
   qr_grad_mat = (double *) malloc( (d * d) * sizeof(double) ) ;
-  qr_work = (double *) malloc( k * sizeof(double) ) ;
+  qr_work = (double *) malloc( d * sizeof(double) ) ;
   qr_tau = (double *) malloc( k * sizeof(double) ) ;
   mat_a = (double *) malloc( (k * k) * sizeof(double) ) ;
   ipiv = (int *) malloc( k * sizeof(int) ) ;
@@ -143,9 +147,57 @@ double vec_dot(vector<double> & v1, vector<double> & v2)
   return s;
 }
 
+// check orthogonality
+int check_orthognality()
+{
+  double tmp ;
+  int flag ;
+  printf("checking inner products between tangent vectors ... ") ;
+  flag = 1 ;
+  for (int i = 0 ; i < d-k; i ++)
+    for (int j = i ; j < d-k; j ++)
+    {
+      tmp = vec_dot(tangent_vec_array[i], tangent_vec_array[j]) ;
+      if ( (j == i) && (fabs(tmp - 1) > orthogonal_tol) ) 
+      {
+	printf("Warning: orthogonality check failed!\n");
+	printf("|<v_%d, v_%d> - 1| = %.4e > %.4e\n", i, j, fabs(tmp-1), orthogonal_tol) ;
+	flag = 0;
+      } 
+      if ( (j > i) && (fabs(tmp) > orthogonal_tol) ) 
+      {
+	printf("\nWarning: orthogonality check failed!\n");
+	printf("|<v_%d, v_%d>| = %.4e > %.4e\n", i, j, fabs(tmp), orthogonal_tol) ;
+	flag = 0;
+      } 
+    }
+
+  if (flag == 1) printf("passed\n") ;
+
+  printf("check inner products between tangents and gradient of \\xi ... ") ;
+  for (int i = 0 ; i < k; i ++)
+    for (int j = 0 ; j < d-k; j ++)
+    {
+      tmp = vec_dot(grad_vec[i], tangent_vec_array[j]) ;
+
+      if (fabs(tmp) > orthogonal_tol) 
+      {
+	printf("\nWarning: orthogonality check failed!\n");
+	printf("|<n_%d, v_%d>| = %.4e > %.4e\n", i, j, fabs(tmp), orthogonal_tol) ;
+	flag = 0;
+      } 
+    }
+
+  if (flag == 1) printf("passed\n") ;
+
+  return flag ;
+}
+
 void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
 {
   int lda , lwork, info ;
+
+  printf("\nQR decomposition...\n") ;
 
   lda = d ;
   lwork = k ;
@@ -177,11 +229,10 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
       tangent_vec_array[i][j] = qr_grad_mat[(k+i)*d + j] ;
   }
 
-  /* check orthogonality
-  for (int i = 0 ; i < d-k; i ++)
-    for (int j = i ; j < d-k; j ++)
-  printf("<%d, %d>=%.4e\n", i, j, vec_dot(tangent_vec_array[i], tangent_vec_array[j])) ;
-  */
+  printf("QR decomposition finished.\n\n") ;
+
+  check_orthognality() ;
+
 }
 
 void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
@@ -189,8 +240,6 @@ void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
   int nrhs, info , lda, ldb ;
   nrhs = 1; lda = k ; ldb = k ; 
   dgesv_(&k, &nrhs, mat_a, &lda, ipiv, linear_sol, &ldb, &info) ;
-
-  extern void dgesv_(int *, int *, double *, int *, int *, double *, int *, int *) ;
 
   if (info != 0)
   {
