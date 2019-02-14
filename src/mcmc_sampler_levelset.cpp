@@ -1,33 +1,6 @@
-#include "ranlib.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <string>
-#include <string.h>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <map>
-#include <set>
-#include <assert.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "mcmc.h"
 
-using namespace std ;
-
-extern "C" {
-  extern void dgeqrf_(int *, int * , double *, int * , double *, double *, int * , int *) ;
-
-  extern void dorgqr_(int *, int * , int *, double *, int * , double *, double *, int * , int *) ;
-
-  extern void dgesv_(int *, int *, double *, int *, int *, double *, int *, int *) ;
-}
-
-const double pi = atan(1) * 4 ;
-
+// total steps
 int n ;
 int N, d, k ;
 int tot_newton_step ;
@@ -39,9 +12,9 @@ double mean_xi_distance ;
 
 int newton_max_step ;
 
-int forward_newton_counter, metropolis_counter, backward_newton_counter, reverse_check_counter ;
+int forward_newton_counter, metropolis_counter, backward_newton_counter, reverse_check_counter, determinant_counter ;
 
-double bin_width ;
+double bin_width, trace_b ;
 
 vector<double> state, v_vec, v_vec_prime, y_state, tmp_state, counter_of_each_bin ;
 
@@ -50,12 +23,16 @@ vector<vector<double> > grad_vec , tangent_vec_array, grad_vec_y, tangent_vec_ar
 // arrays for QR decomposition
 double * qr_tau, * qr_work , * qr_grad_mat ;
 
-double * mat_a, * linear_sol ; 
+double * mat_a, * linear_sol, * mat_x ; 
 int *ipiv ;
 
 // used for debug
-double orthogonal_tol ;
+double orthogonal_tol, determinant_tol ;
 
+int verbose_flag ;
+ofstream log_file ;
+
+int read_config() ;
 // 
 // the vector-valued reaction coordinate function: N + N * (N-1) / 2
 //
@@ -94,6 +71,34 @@ double trace(vector<double> & x)
   return s;
 }
 
+int check_determinant(vector<double> & x)
+{
+  int info, flag ;
+  double s ;
+
+  for (int i = 0 ; i < N * N ; i ++)
+    mat_x[i] = x[i] ;
+
+  dgetrf_(&N, &N, mat_x, &N, ipiv, &info);
+
+  s = 1.0 ;
+  for (int i = 0 ; i < N; i ++)
+    s *= mat_x[i * N + i] ;
+
+  for (int i = 0 ; i < N; i ++)
+    if (ipiv[i] != i+1) s *= -1 ;
+
+  if (fabs(s-1.0) > determinant_tol)
+  {
+    flag = 0 ;
+    if (verbose_flag == 1)
+      log_file << "determinant check failed!\t det=" << "s\n" ;
+  }
+  else flag = 1;
+
+  return flag ;
+}
+
 // gradient of the reaction coordinate functions
 //
 // grad is a matrix of size (k, d) 
@@ -129,6 +134,7 @@ void allocate_mem()
   mat_a = (double *) malloc( (k * k) * sizeof(double) ) ;
   ipiv = (int *) malloc( k * sizeof(int) ) ;
   linear_sol = (double *) malloc( k * sizeof(double) ) ;
+  mat_x = (double *) malloc( d * sizeof(double) ) ;
 
   // (d-k) orthogonal vectors on the tangent space
   tangent_vec_array.resize(d-k) ;
@@ -158,6 +164,7 @@ void deallocate_mem()
   free(mat_a) ;
   free(ipiv) ;
   free(linear_sol) ;
+  free(mat_x) ;
 }
 
 double vec_dot(vector<double> & v1, vector<double> & v2) 
@@ -184,7 +191,10 @@ int check_orthognality(vector<vector<double> > & grad, vector<vector<double> > &
 {
   double tmp ;
   int flag ;
-//  printf("check inner products between tangent vectors ... ") ;
+
+  if (verbose_flag == 1)
+    log_file << "\tcheck inner products between tangent vectors ... " ;
+
   flag = 1 ;
   for (int i = 0 ; i < d-k; i ++)
     for (int j = i ; j < d-k; j ++)
@@ -204,9 +214,12 @@ int check_orthognality(vector<vector<double> > & grad, vector<vector<double> > &
       } 
     }
 
-//  if (flag == 1) printf("passed\n") ;
+  if ( (verbose_flag == 1) && (flag == 1) )
+    log_file << "passed" << endl ;
 
-//  printf("check inner products between tangents and gradient of \\xi ... ") ;
+  if (verbose_flag == 1)
+    log_file << "\tcheck inner products between tangents and gradient of \\xi ... " ;
+
   for (int i = 0 ; i < k; i ++)
     for (int j = 0 ; j < d-k; j ++)
     {
@@ -220,7 +233,8 @@ int check_orthognality(vector<vector<double> > & grad, vector<vector<double> > &
       } 
     }
 
-//  if (flag == 1) printf("passed\n") ;
+  if ( (verbose_flag == 1) && (flag == 1) )
+    log_file << "passed" << endl ;
 
   return flag ;
 }
@@ -229,7 +243,8 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
 {
   int lda , lwork, info ;
 
- // printf("\nQR decomposition...\n") ;
+  if (verbose_flag == 1)
+    log_file << "QR decomposition..." ;
 
   lda = d ;
   lwork = k ;
@@ -261,7 +276,8 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
       t_vec[i][j] = qr_grad_mat[(k+i)*d + j] ;
   }
 
-//  printf("QR decomposition finished.\n\n") ;
+  if (verbose_flag == 1)
+    log_file << "finished" << endl ;
 
   check_orthognality(grad, t_vec) ;
 }
@@ -329,10 +345,12 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
   // Newton iteration method 
   while (eps > eps_tol)
   {
-    printf("eps = %.4e\n", eps); 
+    if (verbose_flag == 1)
+      log_file << "\t Step " << step << ",\teps = " << eps << endl ;
+
     if (step + 1 > newton_max_step) 
     {
-      flag = 0 ;
+      flag = - newton_max_step ;
       break ;
     }
 
@@ -355,10 +373,11 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
 
     nrhs = 1; lda = k ; ldb = k ; 
     dgesv_(&k, &nrhs, mat_a, &lda, ipiv, linear_sol, &ldb, &info) ;
+
     if (info != 0)
     {
       printf("Warning: return value of the linear solver DGESV is wrong: info=%d\n", info) ;
-      flag = 0 ;
+      flag = - (step + 1);
       break ;
     }
 
@@ -383,7 +402,11 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
   {
     // Newton iteration is successful if we are here
     x0 = tmp_x ;
-    printf("eps = %.4e\n", eps); 
+
+    if (verbose_flag == 1)
+      log_file << "\t Step " << step << ",\teps = " << eps << endl ;
+
+    flag = step ;
   }
 
   free(vec_a) ;
@@ -422,39 +445,40 @@ int main ( int argc, char * argv[] )
   char buf[50] ;
   ofstream out_file ;
   int idx ;
-  int newton_success_flag ;
-  int output_every_step ;
-  double accept_prob , tmp , trace_b ;
+  int newton_success_flag, determinant_flag ;
+  double accept_prob , tmp ;
 
   clock_t start , end ;
 
-  n = 10 ;
+  read_config() ;
 
-  // compute the total steps
-  output_every_step = 1000 ;
-
-//  eps_tol = 1e-7 ;
   orthogonal_tol = 1e-14 ;
+  determinant_tol = 1e-12 ;
+  // residual for Newton method 
   eps_tol = 1e-12 ;
-  size_s = 0.2 ;
   newton_grad_tol = 1e-7 ; 
-  newton_max_step = 100 ;
+
+  // tolerance of reversibility check
   reverse_tol = 1e-10 ;
 
+  // total newton steps performed so far
   tot_newton_step = 0 ; 
+
+  // rejection counters 
   forward_newton_counter = 0 ;
   backward_newton_counter = 0 ;
   metropolis_counter = 0 ;
   reverse_check_counter = 0 ;
+  determinant_counter = 0 ;
 
   mean_xi_distance = 0 ;
 
-  n_bins = 50 ;
-  trace_b = 5 ;
+  cout << n_bins ;
+
+  // statistics for output 
   // divied [-trace_b, trace_b] to n_bins with equal width
   bin_width = 2.0 * trace_b  / n_bins ;
-
-  counter_of_each_bin.resize(n_bins,0) ;
+  counter_of_each_bin.resize(n_bins, 0) ;
 
   init_rand_generator();
 
@@ -463,19 +487,25 @@ int main ( int argc, char * argv[] )
   d = N * N ;
   k = N * (N+1) / 2 ;
 
-  //initial state to be the identity matrix
+  //start from the identity matrix
   state.resize(d, 0) ;
   for (int i = 0 ; i < N; i++)
     state[i * N + i] = 1.0 ;
 
   tmp_state.resize(d) ;
   y_state.resize(d) ;
+
+  // get memory for several global variables
   allocate_mem() ;
 
+  sprintf(buf, "./data/log_mcmc_son_%d.txt", N) ;
+  log_file.open(buf) ;
+
+  // count the time
   start = clock() ;
 
-  printf("\nn=%.1e\nNo. of output states=%d\n", n *1.0, n / output_every_step) ;
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
+  printf("n=%d\n", n ) ;
 
   // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
   grad_xi(state, grad_vec) ;
@@ -485,7 +515,8 @@ int main ( int argc, char * argv[] )
 
   for (int i = 0 ; i < n ; i ++)
   {
-    printf("\n==== Generate %dth sample...\n", i) ;
+    if (verbose_flag == 1)
+      log_file << "\n==== Generate " << i << "th sample...\n";
 
     tmp = trace(state) ;
     idx = int ((tmp + trace_b) / bin_width) ;
@@ -499,15 +530,38 @@ int main ( int argc, char * argv[] )
       tmp_state[i] = state[i] + v_vec[i] ;
 
     mean_xi_distance += distance_to_levelset(tmp_state) ;
-    //printf("distance = %.4f\n", distance_to_levelset(tmp_state) ) ;
+
+    if (verbose_flag == 1)
+      log_file 
+	<< "1. Move by v : distance = " 
+	<< distance_to_levelset(tmp_state) 
+	<< endl 
+	<< "2. Forward Newton starts:\n" ;
 
     // projection by newton method
     newton_success_flag = projection_by_Newton(grad_vec, tmp_state) ;
 
-    if (newton_success_flag == 0) // increase the counter, if we didn't find a new state
+    if (newton_success_flag < 0) // increase the counter, if we didn't find a new state
     {
       forward_newton_counter ++ ;
+
+      if (verbose_flag == 1)
+	log_file << "Rejected by newton projection, step = " << -newton_success_flag << endl ;
+
       continue;
+    }
+
+    // check the determinant of the new state
+    determinant_flag = check_determinant(tmp_state) ;
+
+    if (determinant_flag == 0)
+    {
+      determinant_counter ++ ;
+
+      if (verbose_flag == 1)
+	log_file << "Rejected due to negative determinant. " << endl ;
+
+      continue ;
     }
 
     /* 
@@ -515,7 +569,8 @@ int main ( int argc, char * argv[] )
      *
      */
 
-    // printf("distance = %.4e\n", distance_to_levelset(tmp_state) ) ;
+    if (verbose_flag == 1)
+      log_file << "\tNewton steps = " << newton_success_flag << endl << "3. Distance after projection = " << distance_to_levelset(tmp_state) << endl ;
 
     y_state = tmp_state ;
 
@@ -531,7 +586,8 @@ int main ( int argc, char * argv[] )
     // density ratio of two vectors v and v'
     accept_prob = exp(-(vec_dot(v_vec_prime, v_vec_prime) - vec_dot(v_vec, v_vec)) * 0.5 / (size_s * size_s) ) ;
 
-//    printf("|v'|^2=%.4f, |v|^2=%.4f, accept_prob = %.4f\n", vec_dot(v_vec_prime, v_vec_prime), vec_dot(v_vec, v_vec), accept_prob) ;
+    if (verbose_flag == 1)
+      log_file << "4. |v'|^2=" << vec_dot(v_vec_prime, v_vec_prime) << "\t|v|^2=" << vec_dot(v_vec, v_vec) << "\taccept_prob =" << accept_prob << endl ;
 
     if (accept_prob > 1.0) accept_prob = 1.0 ;
 
@@ -551,14 +607,24 @@ int main ( int argc, char * argv[] )
     for (int i = 0 ; i < d; i ++)
       tmp_state[i] = y_state[i] + v_vec_prime[i] ;
 
+    if (verbose_flag == 1)
+      log_file << "5. Backward Newton starts: " << endl ;
+
     // projection by newton method
     newton_success_flag = projection_by_Newton(grad_vec_y, tmp_state) ;
 
-    if (newton_success_flag == 0) // increase the counter, if we didn't find a new state
+    if (newton_success_flag < 0) // increase the counter, if we didn't find a new state
     {
       backward_newton_counter ++ ;
+
+      if (verbose_flag == 1)
+	log_file << "Rejected by newton projection, step = " << -newton_success_flag << endl ;
+
       continue;
     }
+
+    if (verbose_flag == 1)
+      log_file << "\tNewton steps = " << newton_success_flag << endl;
 
     // move to the new state
     state = y_state ;
@@ -568,14 +634,14 @@ int main ( int argc, char * argv[] )
   }
 
   int tot_rej ;
-  out_file.close() ;
+
   printf("\naverage newton iteration steps = %.2f\n", tot_newton_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
-  tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter ;
-  printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tTotal\n") ;
-  printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, tot_rej * 1.0 / n) ;
+  tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter + determinant_counter ;
+  printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tDeterminant\tTotal\n") ;
+  printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
 
-  sprintf(buf, "../data/counter_%d.txt", N) ;
+  sprintf(buf, "./data/counter_%d.txt", N) ;
   out_file.open(buf) ;
 
   out_file << N << ' ' << trace_b << ' ' << n_bins << endl ;
@@ -586,6 +652,7 @@ int main ( int argc, char * argv[] )
   }
   out_file << endl ;
   out_file.close() ;
+  log_file.close() ;
 
   end = clock() ;
   printf("\n\nRuntime : %4.2f sec.\n\n", (end - start) * 1.0 / CLOCKS_PER_SEC ) ;
