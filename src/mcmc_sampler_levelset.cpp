@@ -33,8 +33,6 @@ int N, d, k ;
 int tot_newton_step ;
 int n_bins ;
 
-double h, beta , noise_coeff ; 
-
 double eps_tol, reverse_tol, newton_grad_tol , size_s ;
 
 double mean_xi_distance ;
@@ -85,6 +83,15 @@ void xi( vector<double> & x, vector<double> & ret )
 	ret[idx] += x[i0 + j1] * x[j0 + j1] ;
       idx ++ ;
     }
+}
+
+double trace(vector<double> & x)
+{
+  double s;
+  s = 0 ;
+  for (int i = 0 ; i < N; i ++)
+    s += x[i * N + i];
+  return s;
 }
 
 // gradient of the reaction coordinate functions
@@ -162,20 +169,30 @@ double vec_dot(vector<double> & v1, vector<double> & v2)
   return s;
 }
 
+double distance_to_levelset(vector<double> & x)
+{
+  vector<double> tmp_vec ;
+  double eps ;
+  tmp_vec.resize(k) ;
+  xi(x, tmp_vec) ;
+  eps = sqrt(vec_dot(tmp_vec, tmp_vec)) ;
+  return eps ;
+}
+
 // check orthogonality
-int check_orthognality()
+int check_orthognality(vector<vector<double> > & grad, vector<vector<double> > & t_vec )
 {
   double tmp ;
   int flag ;
-  printf("checking inner products between tangent vectors ... ") ;
+//  printf("check inner products between tangent vectors ... ") ;
   flag = 1 ;
   for (int i = 0 ; i < d-k; i ++)
     for (int j = i ; j < d-k; j ++)
     {
-      tmp = vec_dot(tangent_vec_array[i], tangent_vec_array[j]) ;
+      tmp = vec_dot(t_vec[i], t_vec[j]) ;
       if ( (j == i) && (fabs(tmp - 1) > orthogonal_tol) ) 
       {
-	printf("Warning: orthogonality check failed!\n");
+	printf("\nWarning: orthogonality check failed!\n");
 	printf("|<v_%d, v_%d> - 1| = %.4e > %.4e\n", i, j, fabs(tmp-1), orthogonal_tol) ;
 	flag = 0;
       } 
@@ -187,13 +204,13 @@ int check_orthognality()
       } 
     }
 
-  if (flag == 1) printf("passed\n") ;
+//  if (flag == 1) printf("passed\n") ;
 
-  printf("check inner products between tangents and gradient of \\xi ... ") ;
+//  printf("check inner products between tangents and gradient of \\xi ... ") ;
   for (int i = 0 ; i < k; i ++)
     for (int j = 0 ; j < d-k; j ++)
     {
-      tmp = vec_dot(grad_vec[i], tangent_vec_array[j]) ;
+      tmp = vec_dot(grad[i], t_vec[j]) ;
 
       if (fabs(tmp) > orthogonal_tol) 
       {
@@ -203,7 +220,7 @@ int check_orthognality()
       } 
     }
 
-  if (flag == 1) printf("passed\n") ;
+//  if (flag == 1) printf("passed\n") ;
 
   return flag ;
 }
@@ -212,7 +229,7 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
 {
   int lda , lwork, info ;
 
-  printf("\nQR decomposition...\n") ;
+ // printf("\nQR decomposition...\n") ;
 
   lda = d ;
   lwork = k ;
@@ -241,25 +258,12 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
   for (int i = 0 ; i < d-k; i ++)
   {
     for (int j = 0 ; j < d; j ++)
-      tangent_vec_array[i][j] = qr_grad_mat[(k+i)*d + j] ;
+      t_vec[i][j] = qr_grad_mat[(k+i)*d + j] ;
   }
 
-  printf("QR decomposition finished.\n\n") ;
+//  printf("QR decomposition finished.\n\n") ;
 
-  check_orthognality() ;
-}
-
-void linear_solver(vector<vector<double> > & mat, vector<double> & sol)
-{
-  int nrhs, info , lda, ldb ;
-  nrhs = 1; lda = k ; ldb = k ; 
-  dgesv_(&k, &nrhs, mat_a, &lda, ipiv, linear_sol, &ldb, &info) ;
-
-  if (info != 0)
-  {
-    printf("return value of DGESV is wrong: info=%d\n", info) ;
-    exit(1) ;
-  }
+  check_orthognality(grad, t_vec) ;
 }
 
 /* 
@@ -299,6 +303,7 @@ void generate_v(vector<double> & v_vec)
 int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
 {
   int nrhs, info , lda, ldb, step ;
+  int flag ;
   double * vec_a, s, eps ;
   vector<double> tmp_x, tmp_rhs ;
   vector<vector<double> > tmp_grad_mat ;
@@ -317,15 +322,18 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
   tmp_x = x0 ;
   xi(tmp_x, tmp_rhs) ;
   eps = sqrt(vec_dot(tmp_rhs, tmp_rhs)) ;
+
   step = 0 ;
+  flag = 1 ;
 
   // Newton iteration method 
   while (eps > eps_tol)
   {
+    printf("eps = %.4e\n", eps); 
     if (step + 1 > newton_max_step) 
     {
-      tot_newton_step += step ;
-      return 0 ;
+      flag = 0 ;
+      break ;
     }
 
     // calculate the derivative at current state
@@ -338,7 +346,7 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
 	s = 0 ;
 	for (int i0 = 0; i0 < d; i0++)
 	  s += tmp_grad_mat[i][i0] * Qx[j][i0] ;
-	mat_a[i*k+j] = s ;
+	mat_a[j*k+i] = s ;
       }
 
     // right hand side
@@ -350,8 +358,8 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
     if (info != 0)
     {
       printf("Warning: return value of the linear solver DGESV is wrong: info=%d\n", info) ;
-      tot_newton_step += step + 1 ;
-      return 0 ;
+      flag = 0 ;
+      break ;
     }
 
     // update the coefficient vector a
@@ -371,14 +379,21 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
     eps = sqrt(vec_dot(tmp_rhs, tmp_rhs)) ;
   }
 
-  // Newton iteration is successful if we are here
-  x0 = tmp_x ;
+  if (flag == 1)
+  {
+    // Newton iteration is successful if we are here
+    x0 = tmp_x ;
+    printf("eps = %.4e\n", eps); 
+  }
+
+  free(vec_a) ;
+
   tot_newton_step += step ;
 
-  return 1;
+  return flag ;
 }
 
-void compute_v_prime(vector<double> & state, vector<double> & tmp_state, vector<vector<double> > & tangent_vec_array_y) 
+void compute_v_prime(vector<double> & state, vector<double> & tmp_state, vector<vector<double> > & t_vec) 
 {
   double s ;
   vector<double> state_diff , coeff ;
@@ -391,13 +406,13 @@ void compute_v_prime(vector<double> & state, vector<double> & tmp_state, vector<
 
   // coefficients corresponding to the orthonormal basis
   for (int i = 0 ; i < d-k; i++)
-    coeff[i] = vec_dot(state_diff, tangent_vec_array_y[i]) ;
+    coeff[i] = vec_dot(state_diff, t_vec[i]) ;
 
   for (int i =0; i < d; i ++)
   {
     s = 0 ;
     for (int j = 0 ; j < d-k; j ++)
-      s+= coeff[j] * tangent_vec_array_y[j][i];
+      s+= coeff[j] * t_vec[j][i];
     v_vec_prime[i] = s;
   }
 }
@@ -409,24 +424,21 @@ int main ( int argc, char * argv[] )
   int idx ;
   int newton_success_flag ;
   int output_every_step ;
-  double angle , T , accept_prob , tmp ;
+  double accept_prob , tmp , trace_b ;
 
   clock_t start , end ;
 
-  n = 5000000 ;
-  h = 1.00 ;
-  T = n * h ;
+  n = 10 ;
 
   // compute the total steps
   output_every_step = 1000 ;
 
-  beta = 1.0 ;
-
 //  eps_tol = 1e-7 ;
+  orthogonal_tol = 1e-14 ;
   eps_tol = 1e-12 ;
-  size_s = 1.0 ;
+  size_s = 0.2 ;
   newton_grad_tol = 1e-7 ; 
-  newton_max_step = 10 ;
+  newton_max_step = 100 ;
   reverse_tol = 1e-10 ;
 
   tot_newton_step = 0 ; 
@@ -438,13 +450,13 @@ int main ( int argc, char * argv[] )
   mean_xi_distance = 0 ;
 
   n_bins = 50 ;
-  // divied [0, 2pi] to n_bins with equal width
-  bin_width = 2 * pi / n_bins ;
+  trace_b = 5 ;
+  // divied [-trace_b, trace_b] to n_bins with equal width
+  bin_width = 2.0 * trace_b  / n_bins ;
 
   counter_of_each_bin.resize(n_bins,0) ;
 
   init_rand_generator();
-  noise_coeff = sqrt(2.0 / beta * h) ;
 
   printf("SO(N), N=");
   cin >> N ;
@@ -454,7 +466,7 @@ int main ( int argc, char * argv[] )
   //initial state to be the identity matrix
   state.resize(d, 0) ;
   for (int i = 0 ; i < N; i++)
-    state[i * N] = 1.0 ;
+    state[i * N + i] = 1.0 ;
 
   tmp_state.resize(d) ;
   y_state.resize(d) ;
@@ -462,7 +474,7 @@ int main ( int argc, char * argv[] )
 
   start = clock() ;
 
-  printf("\nTotal time = %.2f\nh=%.2e\nn=%.1e\nNo. of output states=%d\n", T, h, n *1.0, n / output_every_step) ;
+  printf("\nn=%.1e\nNo. of output states=%d\n", n *1.0, n / output_every_step) ;
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
 
   // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
@@ -473,12 +485,21 @@ int main ( int argc, char * argv[] )
 
   for (int i = 0 ; i < n ; i ++)
   {
+    printf("\n==== Generate %dth sample...\n", i) ;
+
+    tmp = trace(state) ;
+    idx = int ((tmp + trace_b) / bin_width) ;
+    counter_of_each_bin[idx] ++ ;
+
     // randomly generate a vector on the (d-k)-dimensional tangent space
     generate_v(v_vec) ;
 
     // move along tangent vector v
     for (int i = 0 ; i < d; i ++)
       tmp_state[i] = state[i] + v_vec[i] ;
+
+    mean_xi_distance += distance_to_levelset(tmp_state) ;
+    //printf("distance = %.4f\n", distance_to_levelset(tmp_state) ) ;
 
     // projection by newton method
     newton_success_flag = projection_by_Newton(grad_vec, tmp_state) ;
@@ -494,6 +515,8 @@ int main ( int argc, char * argv[] )
      *
      */
 
+    // printf("distance = %.4e\n", distance_to_levelset(tmp_state) ) ;
+
     y_state = tmp_state ;
 
     // compute the Jaccobi (gradient) matrix of xi at the NEW state 
@@ -507,6 +530,9 @@ int main ( int argc, char * argv[] )
 
     // density ratio of two vectors v and v'
     accept_prob = exp(-(vec_dot(v_vec_prime, v_vec_prime) - vec_dot(v_vec, v_vec)) * 0.5 / (size_s * size_s) ) ;
+
+//    printf("|v'|^2=%.4f, |v|^2=%.4f, accept_prob = %.4f\n", vec_dot(v_vec_prime, v_vec_prime), vec_dot(v_vec, v_vec), accept_prob) ;
+
     if (accept_prob > 1.0) accept_prob = 1.0 ;
 
     tmp = ranf() ;
@@ -538,7 +564,7 @@ int main ( int argc, char * argv[] )
     state = y_state ;
     // update the gradients and the tangent vectors
     grad_vec = grad_vec_y ;
-    tangent_vec_array = tangent_vec_array ;
+    tangent_vec_array = tangent_vec_array_y ;
   }
 
   int tot_rej ;
@@ -548,6 +574,18 @@ int main ( int argc, char * argv[] )
   tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter ;
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tTotal\n") ;
   printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, tot_rej * 1.0 / n) ;
+
+  sprintf(buf, "../data/counter_%d.txt", N) ;
+  out_file.open(buf) ;
+
+  out_file << N << ' ' << trace_b << ' ' << n_bins << endl ;
+
+  for (int i = 0 ; i < n_bins ; i++)
+  {
+    out_file << counter_of_each_bin[i] << ' ';
+  }
+  out_file << endl ;
+  out_file.close() ;
 
   end = clock() ;
   printf("\n\nRuntime : %4.2f sec.\n\n", (end - start) * 1.0 / CLOCKS_PER_SEC ) ;
