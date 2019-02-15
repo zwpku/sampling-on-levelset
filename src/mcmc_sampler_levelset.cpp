@@ -3,10 +3,10 @@
 // total steps
 int n ;
 int N, d, k ;
-int tot_newton_step ;
+int tot_newton_step, tot_success_newton_step ;
 int n_bins ;
 
-double eps_tol, reverse_tol, newton_grad_tol , size_s ;
+double eps_tol, reverse_tol, size_s ;
 
 double mean_xi_distance ;
 
@@ -408,6 +408,9 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
       log_file << "\t Step " << step << ",\teps = " << eps << endl ;
 
     flag = step ;
+
+    // only count when the convergence is achieved 
+    tot_success_newton_step += step ;
   }
 
   free(vec_a) ;
@@ -447,7 +450,8 @@ int main ( int argc, char * argv[] )
   ofstream out_file ;
   int idx ;
   int newton_success_flag, determinant_flag ;
-  double accept_prob , tmp ;
+
+  double accept_prob , tmp , v_norm_1, v_norm_2 ;
 
   clock_t start , end ;
 
@@ -457,13 +461,15 @@ int main ( int argc, char * argv[] )
   determinant_tol = 1e-10 ;
   // residual for Newton method 
   eps_tol = 1e-12 ;
-  newton_grad_tol = 1e-7 ; 
 
   // tolerance of reversibility check
   reverse_tol = 1e-10 ;
 
   // total newton steps performed so far
   tot_newton_step = 0 ; 
+
+  // total newton steps performed so far, only when converged
+  tot_success_newton_step = 0 ;
 
   // rejection counters 
   forward_newton_counter = 0 ;
@@ -473,8 +479,6 @@ int main ( int argc, char * argv[] )
   determinant_counter = 0 ;
 
   mean_xi_distance = 0 ;
-
-  cout << n_bins ;
 
   // statistics for output 
   // divied [-trace_b, trace_b] to n_bins with equal width
@@ -499,7 +503,7 @@ int main ( int argc, char * argv[] )
   // get memory for several global variables
   allocate_mem() ;
 
-  sprintf(buf, "./data/log_mcmc_son_%d.txt", N) ;
+  sprintf(buf, "./data/log_ex4_mcmc_son_%d.txt", N) ;
   log_file.open(buf) ;
 
   // count the time
@@ -522,15 +526,6 @@ int main ( int argc, char * argv[] )
     tmp = trace(state) ;
     idx = int ((tmp + trace_b) / bin_width) ;
     counter_of_each_bin[idx] ++ ;
-
-    /*
-    for (int j = 0 ; j < d; j ++)
-    {
-      printf("%.2e ", state[j]) ;
-      if (j % N == N-1) printf("\n") ;
-    }
-    printf("trace = %.2e, distnace=%.2e\n\n", tmp, distance_to_levelset(state) ) ;
-    */
 
     // randomly generate a vector on the (d-k)-dimensional tangent space
     generate_v(v_vec) ;
@@ -556,7 +551,7 @@ int main ( int argc, char * argv[] )
       forward_newton_counter ++ ;
 
       if (verbose_flag == 1)
-	log_file << "Rejected by newton projection, step = " << -newton_success_flag << endl ;
+	log_file << "Rejected by Newton projection, step = " << -newton_success_flag << endl ;
 
       continue;
     }
@@ -593,11 +588,23 @@ int main ( int argc, char * argv[] )
     // decide vector v'
     compute_v_prime(state, y_state, tangent_vec_array_y) ;
 
-    // density ratio of two vectors v and v'
-    accept_prob = exp(-(vec_dot(v_vec_prime, v_vec_prime) - vec_dot(v_vec, v_vec)) * 0.5 / (size_s * size_s) ) ;
+    v_norm_1 = vec_dot(v_vec, v_vec);
+    v_norm_2 = vec_dot(v_vec_prime, v_vec_prime);
 
+    // density ratio of two vectors v and v'
+    accept_prob = exp(-(v_norm_2 - v_norm_1) * 0.5 / (size_s * size_s) ) ;
+
+    /* 
+     * In fact, in this special case, we can show that |v|^2=|v'|^2.
+     *  
+     */
     if (verbose_flag == 1)
-      log_file << "4. |v'|^2=" << vec_dot(v_vec_prime, v_vec_prime) << "\t|v|^2=" << vec_dot(v_vec, v_vec) << "\taccept_prob =" << accept_prob << endl ;
+    {
+      log_file << "4. |v'|^2=" << v_norm_2 << "\t|v|^2=" << v_norm_1 << "\taccept_prob =" << accept_prob << endl ;
+
+      if ( fabs(v_norm_1 - v_norm_2) > 1e-6)
+	log_file << "Warning: the norms of v' and v should be the same!\n" ;
+    }
 
     if (accept_prob > 1.0) accept_prob = 1.0 ;
 
@@ -609,8 +616,13 @@ int main ( int argc, char * argv[] )
     }
 
     /*
+     *
      * We have passed the Metropolis-Hasting check. 
      * In the following, we do reversibility check.
+     *
+     * Again, in this special case, in fact we can show that the reversibility
+     * check below is not needed.
+     *
      */
 
     // move state y along tangent vector v'
@@ -628,13 +640,26 @@ int main ( int argc, char * argv[] )
       backward_newton_counter ++ ;
 
       if (verbose_flag == 1)
-	log_file << "Rejected by newton projection, step = " << -newton_success_flag << endl ;
+	log_file << "Rejected by Newton projection, step = " << -newton_success_flag << endl ;
 
       continue;
     }
 
     if (verbose_flag == 1)
       log_file << "\tNewton steps = " << newton_success_flag << endl;
+
+    // check whether tmp_state == state .
+    tmp = 0;
+    for (int ii = 0; ii < d; ii++)
+      tmp += fabs(tmp_state[ii] - state[ii]) * fabs(tmp_state[ii] - state[ii]) ;
+
+    if (sqrt(tmp) > reverse_tol)
+    {
+      reverse_check_counter ++ ;
+
+      if (verbose_flag == 1)
+	log_file << "Rejected by reversibility check\n" ;
+    }
 
     // move to the new state
     state = y_state ;
@@ -645,13 +670,13 @@ int main ( int argc, char * argv[] )
 
   int tot_rej ;
 
-  printf("\naverage newton iteration steps = %.2f\n", tot_newton_step * 1.0 / n) ;
+  printf("\naverage Newton iteration steps = %.2f, average Newton steps to reach convergence = %.2f\n", tot_newton_step * 1.0 / n, tot_success_newton_step * 1.0 / (n-forward_newton_counter - backward_newton_counter) ) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter + determinant_counter ;
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tDeterminant\tTotal\n") ;
   printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
 
-  sprintf(buf, "./data/counter_%d.txt", N) ;
+  sprintf(buf, "./data/ex4_mcmc_counter_%d.txt", N) ;
   out_file.open(buf) ;
 
   out_file << n << ' ' << trace_b << ' ' << n_bins << endl ;

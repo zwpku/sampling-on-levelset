@@ -13,7 +13,7 @@ c = 3
 fig, axs = plt.subplots(1,3, figsize=(12,3), sharey=True)
 
 scheme_id = 0 
-data_file = open('../data/counter_%d.txt' % (scheme_id) , 'r')
+data_file = open('../working_dir/data/ex3_counter_%d.txt' % (scheme_id) , 'r')
 
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2 * pi / n_bin 
@@ -35,7 +35,7 @@ axs[0].set_title(r'$\Theta$', fontsize=22)
 axs[0].legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 scheme_id = 1 
-data_file = open('../data/counter_%d.txt' % (scheme_id) , 'r')
+data_file = open('../working_dir/data/ex3_counter_%d.txt' % (scheme_id) , 'r')
 
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2 * pi / n_bin 
@@ -55,7 +55,7 @@ axs[1].set_title(r'$\Theta^A$', fontsize=22)
 axs[1].legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 scheme_id = 2 
-data_file = open('../data/counter_%d.txt' % (scheme_id) , 'r')
+data_file = open('../working_dir/data/ex3_counter_%d.txt' % (scheme_id) , 'r')
 
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2 * pi / n_bin 
@@ -78,5 +78,5 @@ axs[2].legend(frameon=False, fontsize=18, bbox_to_anchor=(1.05, 1.07))
 
 plt.show()
 
-fig_file_name = '../fig/dist.eps' 
+fig_file_name = '../fig/ex3_dist_all.eps' 
 savefig(fig_file_name, bbox_inches='tight')

@@ -1,35 +1,19 @@
-#include "ranlib.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <string>
-#include <string.h>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <map>
-#include <set>
-#include <assert.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-using namespace std ;
+#include "ex2.h"
 
 const double pi = atan(1) * 4 ;
 
-int n, id_mat_a_flag ;
+int n, id_mat_a_flag, large_step_size_flag ;
 int tot_step ;
 int n_bins_theta, n_bins_phi ;
 
-double h, beta , noise_coeff, dt, eps_tol , stiff_eps ;
+double h, beta , noise_coeff, stiff_eps ;
 
 double bin_width_theta, bin_width_phi ;
 double mean_xi_distance ;
 
 vector<double> state, theta_counter_of_each_bin, phi_counter_of_each_bin;
+
+int read_config() ;
 
 // the reaction coordinate function 
 // In this example, the level set is the unit sphere S^2 in R^3
@@ -233,7 +217,7 @@ int main ( int argc, char * argv[] )
 {
   char buf[50] ;
   ofstream out_file ;
-  int idx , large_step_size_flag ;
+  int idx ;
   int output_every_step ;
   double theta_angle, phi_angle, T;
 
@@ -241,31 +225,29 @@ int main ( int argc, char * argv[] )
 
   // initialize
 
-  printf("matrix a = id? (0/1):\n");
-  cin >> id_mat_a_flag ;
+  read_config() ;
 
   beta = 1.0 ;
-  stiff_eps = 0.005 ;
-  n = (int) 1e7 ;
-  large_step_size_flag = 1 ;
+
+  printf("stiff_eps=%.4e\n", stiff_eps) ;
+
   if (id_mat_a_flag == 0)
+  {
     h = 0.01 ;
+    printf("non-identity matrix, h = %.4f\n", h) ;
+  }
   else {
-    printf("large step-size (h=0.001) or not (h=0.0002)? (0/1)\n") ;
-    cin >> large_step_size_flag ;
     if (large_step_size_flag == 1)
       h = 0.005 ;
     else h=0.0002 ;
+
+    printf("a=id, h = %.4f\n", h) ;
   }
+
   T = n * h ;
   output_every_step = 1000 ;
   mean_xi_distance = 0 ;
 
-  // step-size in solving ODE or optimization 
-  dt = 0.01 ;
-
-//  eps_tol = 1e-7 ;
-  eps_tol = 1e-10 ;
   tot_step = 0 ; 
   n_bins_theta = 500 ;
   n_bins_phi = 100 ;
@@ -289,7 +271,7 @@ int main ( int argc, char * argv[] )
 
   printf("n=%d\t\th=%.2e\tT=%.2f\t\tNo. of output states=%d\n", n, h, T, n / output_every_step) ;
 
-  sprintf(buf, "../data/ex2_traj_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
+  sprintf(buf, "./data/ex2_traj_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
 
   out_file.open(buf) ;
 
@@ -322,7 +304,7 @@ int main ( int argc, char * argv[] )
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
 
-  sprintf(buf, "../data/theta_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
+  sprintf(buf, "./data/ex2_theta_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
   out_file.open(buf) ;
   out_file << n << ' ' << n_bins_theta << endl ;
   for (int i = 0 ; i < n_bins_theta ; i++)
@@ -332,7 +314,7 @@ int main ( int argc, char * argv[] )
   out_file << endl ;
   out_file.close() ;
 
-  sprintf(buf, "../data/phi_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
+  sprintf(buf, "./data/ex2_phi_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
   out_file.open(buf) ;
   out_file << n << ' ' << n_bins_phi << endl ;
   for (int i = 0 ; i < n_bins_phi ; i++)
