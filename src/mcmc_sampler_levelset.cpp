@@ -92,7 +92,7 @@ int check_determinant(vector<double> & x)
   {
     flag = 0 ;
     if (verbose_flag == 1)
-      log_file << "determinant check failed!\t det=" << "s\n" ;
+      log_file << "determinant check failed!\t det=" << s << "\n" ;
   }
   else flag = 1;
 
@@ -182,6 +182,7 @@ double distance_to_levelset(vector<double> & x)
   double eps ;
   tmp_vec.resize(k) ;
   xi(x, tmp_vec) ;
+
   eps = sqrt(vec_dot(tmp_vec, tmp_vec)) ;
   return eps ;
 }
@@ -453,7 +454,7 @@ int main ( int argc, char * argv[] )
   read_config() ;
 
   orthogonal_tol = 1e-14 ;
-  determinant_tol = 1e-12 ;
+  determinant_tol = 1e-10 ;
   // residual for Newton method 
   eps_tol = 1e-12 ;
   newton_grad_tol = 1e-7 ; 
@@ -516,18 +517,27 @@ int main ( int argc, char * argv[] )
   for (int i = 0 ; i < n ; i ++)
   {
     if (verbose_flag == 1)
-      log_file << "\n==== Generate " << i << "th sample...\n";
+      log_file << "\n==== Generate " << i << "th sample...\n" ;
 
     tmp = trace(state) ;
     idx = int ((tmp + trace_b) / bin_width) ;
     counter_of_each_bin[idx] ++ ;
 
+    /*
+    for (int j = 0 ; j < d; j ++)
+    {
+      printf("%.2e ", state[j]) ;
+      if (j % N == N-1) printf("\n") ;
+    }
+    printf("trace = %.2e, distnace=%.2e\n\n", tmp, distance_to_levelset(state) ) ;
+    */
+
     // randomly generate a vector on the (d-k)-dimensional tangent space
     generate_v(v_vec) ;
 
     // move along tangent vector v
-    for (int i = 0 ; i < d; i ++)
-      tmp_state[i] = state[i] + v_vec[i] ;
+    for (int ii = 0 ; ii < d; ii ++)
+      tmp_state[ii] = state[ii] + v_vec[ii] ;
 
     mean_xi_distance += distance_to_levelset(tmp_state) ;
 
@@ -604,8 +614,8 @@ int main ( int argc, char * argv[] )
      */
 
     // move state y along tangent vector v'
-    for (int i = 0 ; i < d; i ++)
-      tmp_state[i] = y_state[i] + v_vec_prime[i] ;
+    for (int ii = 0 ; ii < d; ii ++)
+      tmp_state[ii] = y_state[ii] + v_vec_prime[ii] ;
 
     if (verbose_flag == 1)
       log_file << "5. Backward Newton starts: " << endl ;
@@ -639,12 +649,12 @@ int main ( int argc, char * argv[] )
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter + determinant_counter ;
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tDeterminant\tTotal\n") ;
-  printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
+  printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
 
   sprintf(buf, "./data/counter_%d.txt", N) ;
   out_file.open(buf) ;
 
-  out_file << N << ' ' << trace_b << ' ' << n_bins << endl ;
+  out_file << n << ' ' << trace_b << ' ' << n_bins << endl ;
 
   for (int i = 0 ; i < n_bins ; i++)
   {

@@ -17,10 +17,10 @@ N = int (raw_input('N='))
 
 data_file = open('../working_dir/data/counter_%d.txt' % N, 'r')
 
-tmp, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
-bin_width = 2 * xb / n_bin 
+n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
+bin_width = 2.0 * xb / n_bin 
   
-counter_data = [ (float(x) * 1.0 / (2 * xb) ) for x in data_file.readline().split() ]
+counter_data = [ (float(x) / (n * bin_width)) for x in data_file.readline().split() ]
 
 x_vec = np.linspace( -xb + bin_width * 0.5, xb - bin_width*0.5, n_bin, endpoint=True )
 
