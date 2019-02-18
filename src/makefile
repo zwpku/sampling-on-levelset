@@ -2,8 +2,8 @@
 CFLAGS=-g -O2 -DDEBUG 
 CC=g++
 
-#LOCAL_DIR=/home/wzhang/local/
-LOCAL_DIR=/home/mi/weizhang/local/
+LOCAL_DIR=/home/wzhang/local/
+#LOCAL_DIR=/home/mi/weizhang/local/
 INCLUDES=-I$(LOCAL_DIR)/include 
 
 LDFLAGS=-Wl,-rpath,$(LOCAL_DIR)/lib -L$(LOCAL_DIR)/lib -lm -lpthread -llapack -lblas -lranlib -lconfig++ -lgfortran

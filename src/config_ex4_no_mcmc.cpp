@@ -71,6 +71,12 @@ int read_config()
   if ( read_value(cfg, string("verbose_flag"), verbose_flag) < 0 )
     return -1;
 
+  if ( read_value(cfg, string("maximal_try_number"), maximal_try_number) < 0 )
+    return -1;
+
+  if ( read_value(cfg, string("output_every_step"), output_every_step) < 0 )
+    return -1;
+
   return 0 ;
 }
 

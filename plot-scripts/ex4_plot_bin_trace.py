@@ -13,8 +13,12 @@ plt.figure(figsize=(8, 4))
 axs = plt.gca()
 
 N = int (raw_input('N='))
+mcmc_flag = int (raw_input('mcmc? (0/1)'))
 
-data_file = open('../working_dir/data/ex4_mcmc_counter_%d.txt' % N, 'r')
+if mcmc_flag == 1 :
+    data_file = open('../working_dir/data/ex4_mcmc_counter_%d.txt' % N, 'r')
+else :
+    data_file = open('../working_dir/data/ex4_no_mcmc_counter_%d.txt' % N, 'r')
 
 n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2.0 * xb / n_bin 
@@ -40,5 +44,9 @@ axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 plt.show()
 
-fig_file_name = '../fig/ex4_trace_dist_%d.eps' % N
+if mcmc_flag == 1:
+    fig_file_name = '../fig/ex4_mcmc_trace_dist_%d.eps' % N
+else :
+    fig_file_name = '../fig/ex4_no_mcmc_trace_dist_%d.eps' % N
+
 savefig(fig_file_name, bbox_inches='tight')

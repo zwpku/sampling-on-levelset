@@ -4,13 +4,13 @@
 int n ;
 int N, d, k ;
 int tot_newton_step, tot_success_newton_step ;
-int n_bins ;
+int n_bins, output_every_step ;
 
 double eps_tol, reverse_tol, size_s ;
 
 double mean_xi_distance ;
 
-int newton_max_step ;
+int newton_max_step, newton_solver_counter, newton_solver_converge_counter ;
 
 int forward_newton_counter, metropolis_counter, backward_newton_counter, reverse_check_counter, determinant_counter ;
 
@@ -18,11 +18,14 @@ double bin_width, trace_b ;
 
 vector<double> state, v_vec, v_vec_prime, y_state, tmp_state, counter_of_each_bin ;
 
+double len_v_bin_width, len_v_bound, max_v_norm_converged, min_v_norm_not_converged ;
+int n_v_bins ;
+vector<double> bin_len_v_newton_converged, bin_len_v_newton_not_converged ;
+
 vector<vector<double> > grad_vec , tangent_vec_array, grad_vec_y, tangent_vec_array_y ;
 
 // arrays for QR decomposition
 double * qr_tau, * qr_work , * qr_grad_mat ;
-
 double * mat_a, * linear_sol, * mat_x ; 
 int *ipiv ;
 
@@ -411,11 +414,14 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
 
     // only count when the convergence is achieved 
     tot_success_newton_step += step ;
+    newton_solver_converge_counter ++ ;
   }
 
   free(vec_a) ;
 
   tot_newton_step += step ;
+  // count how many times we call this function
+  newton_solver_counter ++ ;
 
   return flag ;
 }
@@ -471,6 +477,9 @@ int main ( int argc, char * argv[] )
   // total newton steps performed so far, only when converged
   tot_success_newton_step = 0 ;
 
+  newton_solver_counter = 0 ;
+  newton_solver_converge_counter = 0 ;
+
   // rejection counters 
   forward_newton_counter = 0 ;
   backward_newton_counter = 0 ;
@@ -492,6 +501,15 @@ int main ( int argc, char * argv[] )
   d = N * N ;
   k = N * (N+1) / 2 ;
 
+  n_v_bins = 500; 
+  len_v_bound = 5.0 * size_s * sqrt(d-k) ;
+  len_v_bin_width = len_v_bound / n_v_bins ;
+  bin_len_v_newton_converged.resize(n_v_bins) ;
+  bin_len_v_newton_not_converged.resize(n_v_bins) ;
+
+  min_v_norm_not_converged = 1e8 ;
+  max_v_norm_converged = -1.0 ;
+
   //start from the identity matrix
   state.resize(d, 0) ;
   for (int i = 0 ; i < N; i++)
@@ -510,13 +528,17 @@ int main ( int argc, char * argv[] )
   start = clock() ;
 
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
-  printf("n=%d\n", n ) ;
+  printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
 
   // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
   grad_xi(state, grad_vec) ;
 
   // for the initial state, fine the orthogonal vectors of tangent space by QR decomposition 
   qr_decomp(grad_vec, tangent_vec_array) ;
+
+  sprintf(buf, "./data/ex4_mcmc_traj_%d.txt", N) ;
+  out_file.open(buf) ;
+  out_file << n / output_every_step << endl ;
 
   for (int i = 0 ; i < n ; i ++)
   {
@@ -526,6 +548,9 @@ int main ( int argc, char * argv[] )
     tmp = trace(state) ;
     idx = int ((tmp + trace_b) / bin_width) ;
     counter_of_each_bin[idx] ++ ;
+
+    if (i % output_every_step == 0)
+      out_file << tmp << ' ' ;
 
     // randomly generate a vector on the (d-k)-dimensional tangent space
     generate_v(v_vec) ;
@@ -546,6 +571,10 @@ int main ( int argc, char * argv[] )
     // projection by newton method
     newton_success_flag = projection_by_Newton(grad_vec, tmp_state) ;
 
+    tmp = sqrt( vec_dot(v_vec, v_vec) )  ;
+    idx = int (tmp / len_v_bin_width) ;
+    if (idx > n_v_bins-1) idx = n_v_bins - 1;
+
     if (newton_success_flag < 0) // increase the counter, if we didn't find a new state
     {
       forward_newton_counter ++ ;
@@ -553,8 +582,16 @@ int main ( int argc, char * argv[] )
       if (verbose_flag == 1)
 	log_file << "Rejected by Newton projection, step = " << -newton_success_flag << endl ;
 
+      bin_len_v_newton_not_converged[idx] ++ ;
+
+      if (tmp < min_v_norm_not_converged) min_v_norm_not_converged = tmp ;
+
       continue;
     }
+
+    if (tmp > max_v_norm_converged) max_v_norm_converged = tmp ;
+
+    bin_len_v_newton_converged[idx] ++ ;
 
     // check the determinant of the new state
     determinant_flag = check_determinant(tmp_state) ;
@@ -625,6 +662,7 @@ int main ( int argc, char * argv[] )
      *
      */
 
+    /*
     // move state y along tangent vector v'
     for (int ii = 0 ; ii < d; ii ++)
       tmp_state[ii] = y_state[ii] + v_vec_prime[ii] ;
@@ -660,6 +698,7 @@ int main ( int argc, char * argv[] )
       if (verbose_flag == 1)
 	log_file << "Rejected by reversibility check\n" ;
     }
+    */
 
     // move to the new state
     state = y_state ;
@@ -668,13 +707,22 @@ int main ( int argc, char * argv[] )
     tangent_vec_array = tangent_vec_array_y ;
   }
 
+  out_file.close() ;
+
   int tot_rej ;
 
-  printf("\naverage Newton iteration steps = %.2f, average Newton steps to reach convergence = %.2f\n", tot_newton_step * 1.0 / n, tot_success_newton_step * 1.0 / (n-forward_newton_counter - backward_newton_counter) ) ;
+  printf("\naverage Newton iteration steps = %.2f, ", tot_newton_step * 1.0 / newton_solver_counter );
+  if (newton_solver_converge_counter > 0) 
+    printf("average Newton steps to reach convergence = %.2f\n", tot_success_newton_step * 1.0 / newton_solver_converge_counter ) ;
+  else printf("\n") ;
+
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter + determinant_counter ;
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tDeterminant\tTotal\n") ;
   printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
+
+  printf("max |v|, when Newton converges : %.4e\n", max_v_norm_converged) ; 
+  printf("min |v|, when Newton doesn't converge : %.4e\n", min_v_norm_not_converged) ; 
 
   sprintf(buf, "./data/ex4_mcmc_counter_%d.txt", N) ;
   out_file.open(buf) ;
@@ -687,12 +735,32 @@ int main ( int argc, char * argv[] )
   }
   out_file << endl ;
   out_file.close() ;
+
+  sprintf(buf, "./data/ex4_mcmc_v_norm_counter_%d.txt", N) ;
+  out_file.open(buf) ;
+
+  out_file << n - forward_newton_counter << ' ' << forward_newton_counter << ' ' << size_s << ' ' << len_v_bound << ' ' << n_v_bins << endl ;
+
+  for (int i = 0 ; i < n_v_bins ; i++)
+  {
+    out_file << bin_len_v_newton_converged[i] << ' ';
+  }
+  out_file << endl ;
+
+  for (int i = 0 ; i < n_v_bins ; i++)
+  {
+    out_file << bin_len_v_newton_not_converged[i] << ' ';
+  }
+  out_file << endl ;
+
+  out_file.close() ;
   log_file.close() ;
 
   end = clock() ;
   printf("\n\nRuntime : %4.2f sec.\n\n", (end - start) * 1.0 / CLOCKS_PER_SEC ) ;
 
   deallocate_mem() ;
+
 
   return 0; 
 }

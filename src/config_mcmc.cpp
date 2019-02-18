@@ -63,6 +63,9 @@ int read_config()
   if ( read_value(cfg, string("trace_b"), trace_b) < 0 )
     return -1;
 
+  if ( read_value(cfg, string("output_every_step"), output_every_step) < 0 )
+    return -1;
+
   return 0 ;
 }
 

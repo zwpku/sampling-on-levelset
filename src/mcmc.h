@@ -30,7 +30,7 @@ extern "C" {
 
 const double pi = atan(1) * 4 ;
 
-extern int n, N, n_bins , newton_max_step, verbose_flag ;
+extern int n, N, n_bins , newton_max_step, verbose_flag , output_every_step ;
 
 extern double size_s, trace_b ;
 

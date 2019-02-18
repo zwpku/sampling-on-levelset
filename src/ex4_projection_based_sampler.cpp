@@ -3,7 +3,7 @@
 const double pi = atan(1) * 4 ;
 
 int n, N, d, k, tot_step ;
-int n_bins ;
+int n_bins, output_every_step, maximal_try_number, tot_try_number ;
 
 double h, beta, noise_coeff, dt, eps_tol ;
 
@@ -266,8 +266,7 @@ int main ( int argc, char * argv[] )
 {
   char buf[50] ;
   ofstream out_file ;
-  int idx, determinant_flag ;
-  int output_every_step ;
+  int idx, determinant_flag, new_state_sucess_flag, try_number ;
   double T, tmp ;
 
   clock_t start , end ;
@@ -275,7 +274,6 @@ int main ( int argc, char * argv[] )
   read_config() ;
   // compute the total steps
   T = n * h ;
-  output_every_step = 1000 ;
 
   // step-size in solving ODE or optimization 
   //
@@ -314,7 +312,11 @@ int main ( int argc, char * argv[] )
   start = clock() ;
 
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
-  printf("n=%d\n", n ) ;
+  printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
+
+  sprintf(buf, "./data/ex4_no_mcmc_traj_%d.txt", N) ;
+  out_file.open(buf) ;
+  out_file << n / output_every_step << endl ;
 
   for (int i = 0 ; i < n ; i ++)
   {
@@ -323,24 +325,51 @@ int main ( int argc, char * argv[] )
     idx = int ((tmp + trace_b) / bin_width) ;
     counter_of_each_bin[idx] ++ ;
 
-    update_state_flow_map(state, new_state) ;
+    if (i % output_every_step == 0)
+      out_file << tmp << ' ' ;
 
-    // check the determinant of the new state
-    determinant_flag = check_determinant(new_state) ;
-
-    if (determinant_flag == 0)
+    try_number = 0 ;
+    new_state_sucess_flag = 0;
+    while (try_number < maximal_try_number)
     {
-      if (verbose_flag == 1)
-	log_file << "Error: Negative determinant! " << endl ;
+      update_state_flow_map(state, new_state) ;
 
-      exit(1);
+      // check the determinant of the new state
+      determinant_flag = check_determinant(new_state) ;
+
+      try_number ++ ;
+
+      if (determinant_flag == 0)
+      {
+	if (verbose_flag == 1)
+	  log_file << try_number << " Try: the determinant of new state is not 1! " << endl ;
+      } else 
+      {
+	new_state_sucess_flag = 1;
+	break ;
+      }
     }
 
-    state = new_state ;
+    if (new_state_sucess_flag == 1)
+    {
+      state = new_state ;
+      tot_try_number += try_number ;
+      if (verbose_flag == 1)
+	  log_file << "\tfound new state after " << try_number << " trials\n" ;
+    }
+    else {
+	if (verbose_flag == 1)
+	  log_file << " Error: exceed " << maximal_try_number << " times, still didn't find new state!\n\tMay be the step-size is too large. Exit!" << endl ;
+        printf(" Error: exceed %d times, still didn't find new state!\n\t May be the step-size (h=%.4f) is too large. Exit!\n", try_number, h) ;
+	exit(1) ;
+    }
   }
+
+  out_file.close() ;
 
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
+  printf("\nAverage try number = %.1f\n", tot_try_number * 1.0 / n) ;
 
   sprintf(buf, "./data/ex4_no_mcmc_counter_%d.txt", N) ;
   out_file.open(buf) ;

@@ -18,7 +18,7 @@
 
 using namespace std ;
 
-extern int n, verbose_flag, n_bins ;
+extern int n, verbose_flag, n_bins, output_every_step, maximal_try_number ;
 extern double dt, eps_tol, h, trace_b ;
 
 extern "C" {
