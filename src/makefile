@@ -10,7 +10,7 @@ LDFLAGS=-Wl,-rpath,$(LOCAL_DIR)/lib -L$(LOCAL_DIR)/lib -lm -lpthread -llapack -l
 
 SOURCES=ex2_stiff_potential_on_s2.cpp 
 
-all : ex2 gen_path 
+all : ex2 gen_path mcmc_sampler_son ex4_no_mcmc 
 
 ex2 : ex2_stiff_potential_on_s2.cpp ex2.h config_ex2.cpp
 	$(CC) $(CFLAGS) $(INCLUDES)  ex2_stiff_potential_on_s2.cpp config_ex2.cpp -o ex2 $(LDFLAGS)
@@ -23,6 +23,9 @@ mcmc_sampler_son : mcmc_sampler_levelset.cpp mcmc.h config_mcmc.cpp
 
 ex4_no_mcmc: ex4_projection_based_sampler.cpp ex4_no_mcmc.h config_ex4_no_mcmc.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) ex4_projection_based_sampler.cpp config_ex4_no_mcmc.cpp -o ex4_no_mcmc $(LDFLAGS)
+
+acf: acf.cpp acf.h config_acf.cpp 
+	$(CC) $(CFLAGS) $(INCLUDES) acf.cpp config_acf.cpp -o acf $(LDFLAGS)
 
 clean:
 	rm -f ex2 gen_path mcmc_sampler_son ex4_no_mcmc
