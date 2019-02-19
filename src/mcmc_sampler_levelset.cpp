@@ -6,9 +6,9 @@ int N, d, k ;
 int tot_newton_step, tot_success_newton_step ;
 int n_bins, output_every_step ;
 
-double eps_tol, reverse_tol, size_s ;
+double eps_tol, reverse_tol, size_s, h ;
 
-double mean_xi_distance ;
+double mean_xi_distance, mean_trace ;
 
 int newton_max_step, newton_solver_counter, newton_solver_converge_counter ;
 
@@ -467,6 +467,7 @@ int main ( int argc, char * argv[] )
   determinant_tol = 1e-10 ;
   // residual for Newton method 
   eps_tol = 1e-12 ;
+  size_s = sqrt(2.0 * h) ;
 
   // tolerance of reversibility check
   reverse_tol = 1e-10 ;
@@ -488,6 +489,7 @@ int main ( int argc, char * argv[] )
   determinant_counter = 0 ;
 
   mean_xi_distance = 0 ;
+  mean_trace = 0 ;
 
   // statistics for output 
   // divied [-trace_b, trace_b] to n_bins with equal width
@@ -529,6 +531,7 @@ int main ( int argc, char * argv[] )
 
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
   printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
+  printf("h=%.3e,\t size_s=%.3e\n", h, size_s) ;
 
   // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
   grad_xi(state, grad_vec) ;
@@ -548,6 +551,7 @@ int main ( int argc, char * argv[] )
     tmp = trace(state) ;
     idx = int ((tmp + trace_b) / bin_width) ;
     counter_of_each_bin[idx] ++ ;
+    mean_trace += tmp ;
 
     if (i % output_every_step == 0)
       out_file << tmp << ' ' ;
@@ -720,6 +724,8 @@ int main ( int argc, char * argv[] )
   tot_rej = forward_newton_counter + backward_newton_counter + reverse_check_counter + metropolis_counter + determinant_counter ;
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tDeterminant\tTotal\n") ;
   printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
+
+  printf("mean trace: %.4f\n", mean_trace / n) ;
 
   printf("max |v|, when Newton converges : %.4e\n", max_v_norm_converged) ; 
   printf("min |v|, when Newton doesn't converge : %.4e\n", min_v_norm_not_converged) ; 

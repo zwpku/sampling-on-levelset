@@ -54,7 +54,7 @@ int read_config()
   if ( read_value(cfg, string("newton_max_step"), newton_max_step) < 0 )
     return -1;
 
-  if ( read_value(cfg, string("size_s"), size_s) < 0 )
+  if ( read_value(cfg, string("h"), h) < 0 )
     return -1;
 
   if ( read_value(cfg, string("verbose_flag"), verbose_flag) < 0 )

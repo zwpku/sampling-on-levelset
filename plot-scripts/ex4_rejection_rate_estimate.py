@@ -33,7 +33,7 @@ bin_width = max_size_s / n_size_s
 
 x_vec = np.linspace( bin_width * 0.5, max_size_s - bin_width*0.5, n_size_s, endpoint=True )
 
-cdf_vec = [ cdf(sqrt(N) / x, n_dof) for x in x_vec]
+cdf_vec = [ 1.0 - cdf(sqrt(N / x * 0.5), n_dof) for x in x_vec]
 
 axs.plot(x_vec, cdf_vec, color='k', linewidth=1.5, linestyle ='-', label=r'estimate') 
 
@@ -42,7 +42,7 @@ axs.set_ylim(0.01, 1.0)
 #axs.set_xticks([0, pi/2, pi, pi*1.5, 2*pi]) 
 #axs.set_xticklabels(['$0$', r'$\pi/2$', r'$\pi$', r'$3\pi/2$', r'$2\pi$'])
 #axs.set_yticks([0.1, 0.2, 0.3])
-axs.tick_params(axis='x', labelsize=20)
+axs.tick_params(axis='h', labelsize=20)
 axs.tick_params(axis='y', labelsize=20)
 #axs.set_title(r'$\Theta$', fontsize=22)
 axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))

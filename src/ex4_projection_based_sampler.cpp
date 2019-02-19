@@ -5,11 +5,15 @@ const double pi = atan(1) * 4 ;
 int n, N, d, k, tot_step ;
 int n_bins, output_every_step, maximal_try_number, tot_try_number ;
 
+int dt_too_large_counter ;
+
 double h, beta, noise_coeff, dt, eps_tol ;
 
 double bin_width, trace_b ;
 
 double mean_xi_distance ;
+
+double mean_trace ;
 
 int verbose_flag ;
 ofstream log_file ;
@@ -160,31 +164,52 @@ void f(vector<double> & x, vector<double> & force)
  */
 int theta_projection(vector<double> & state)
 {
-  double eps ;
-  int step ;
-  vector<double> x, k1, k2, k3 ;
+  double eps_old, eps, cdt ;
+  int step, decrease_counter ;
+  vector<double> x0, x, k1, k2, k3 ;
 
   k1.resize(d) ; k2.resize(d) ; k3.resize(d) ;
 
   eps = distance_to_levelset(state) ;
   step = 0 ; 
+  cdt = dt ;
+  decrease_counter = 0 ;
   while (eps > eps_tol) // Runge-Kutta method
   {
-    x = state ;
+    eps_old = eps ;
+    x0 = state ; x = state ;
     f(x, k1) ;
     for (int i = 0 ; i < d; i ++)
-      x[i] = state[i] + 0.5 * dt * k1[i] ;
+      x[i] = state[i] + 0.5 * cdt * k1[i] ;
     f(x, k2) ;
     for (int i = 0 ; i < d; i ++)
-      x[i] = state[i] + 0.75 * dt * k2[i] ;
+      x[i] = state[i] + 0.75 * cdt * k2[i] ;
     f(x, k3) ;
     for (int i = 0 ; i < d; i ++)
-      state[i] += dt * (2.0 / 9 * k1[i] + 1.0 / 3 * k2[i] + 4.0 / 9 * k3[i]) ;
+      state[i] += cdt * (2.0 / 9 * k1[i] + 1.0 / 3 * k2[i] + 4.0 / 9 * k3[i]) ;
 
     step ++ ;
     eps = distance_to_levelset(state) ;
+    if (eps > eps_old)
+    {
+      state = x0;
+      if (verbose_flag == 1)
+        log_file << "Warning: distance increased from " << eps_old << " to " << eps << ". Decrease step-size: " << cdt << " to " << cdt * 0.5 << endl ;
+      cdt *= 0.5 ;
+      eps = eps_old ;
+      decrease_counter ++ ;
+    }
   }
+
   tot_step += step ;
+
+  if (decrease_counter > 0)
+  {
+   if (verbose_flag == 1)
+     log_file << "decrease_counter = " << decrease_counter << " (dt, cdt) =" << dt << ' ' << cdt << endl ; 
+
+    dt_too_large_counter ++ ;
+  }
 
   return step ;
 }
@@ -282,6 +307,8 @@ int main ( int argc, char * argv[] )
   determinant_tol = 1e-3 ;
 
   tot_step = 0 ; 
+  dt_too_large_counter = 0 ;
+  mean_trace = 0 ;
 
   // statistics for output 
   // divied [-trace_b, trace_b] to n_bins with equal width
@@ -324,6 +351,8 @@ int main ( int argc, char * argv[] )
     tmp = trace(state) ;
     idx = int ((tmp + trace_b) / bin_width) ;
     counter_of_each_bin[idx] ++ ;
+
+    mean_trace += tmp ;
 
     if (i % output_every_step == 0)
       out_file << tmp << ' ' ;
@@ -370,6 +399,9 @@ int main ( int argc, char * argv[] )
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   printf("\nAverage try number = %.1f\n", tot_try_number * 1.0 / n) ;
+  printf("\nProb. when dt is large = %.4f\n", dt_too_large_counter * 1.0 / n) ;
+
+  printf("mean trace: %.4f\n", mean_trace / n) ;
 
   sprintf(buf, "./data/ex4_no_mcmc_counter_%d.txt", N) ;
   out_file.open(buf) ;
