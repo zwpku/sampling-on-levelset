@@ -1,133 +1,30 @@
-#include "mcmc.h"
+#include "ex4.h"
 
 // total steps
-int n ;
-int N, d, k ;
 int tot_newton_step, tot_success_newton_step ;
-int n_bins, output_every_step ;
 
-double eps_tol, reverse_tol, size_s, h ;
+double reverse_tol, size_s ;
 
-double mean_xi_distance, mean_trace ;
-
-int newton_max_step, newton_solver_counter, newton_solver_converge_counter ;
+int newton_solver_counter, newton_solver_converge_counter ;
 
 int forward_newton_counter, metropolis_counter, backward_newton_counter, reverse_check_counter, determinant_counter ;
 
-double bin_width, trace_b ;
-
-vector<double> state, v_vec, v_vec_prime, y_state, tmp_state, counter_of_each_bin ;
+vector<double> state, v_vec, v_vec_prime, y_state, tmp_state ;
 
 double len_v_bin_width, len_v_bound, max_v_norm_converged, min_v_norm_not_converged ;
 int n_v_bins ;
 vector<double> bin_len_v_newton_converged, bin_len_v_newton_not_converged ;
 
-vector<vector<double> > grad_vec , tangent_vec_array, grad_vec_y, tangent_vec_array_y ;
+vector<vector<double> > tangent_vec_array, grad_vec_y, tangent_vec_array_y ;
 
 // arrays for QR decomposition
 double * qr_tau, * qr_work , * qr_grad_mat ;
-double * mat_a, * linear_sol, * mat_x ; 
-int *ipiv ;
+double * mat_a, * linear_sol ; 
 
 // used for debug
-double orthogonal_tol, determinant_tol ;
-
-int verbose_flag ;
-ofstream log_file ;
+double orthogonal_tol ;
 
 int read_config() ;
-// 
-// the vector-valued reaction coordinate function: N + N * (N-1) / 2
-//
-void xi( vector<double> & x, vector<double> & ret )
-{
-  int idx, i0, j0 ;
-  // first N component 
-  for (int i = 0 ; i < N; i ++)
-  {
-    ret[i] = 0 ;
-    i0 = i * N ;
-    for (int j = 0 ; j < N; j ++)
-      ret[i] += x[i0+j] * x[i0+j] ;
-    ret[i] = 0.5 * (ret[i] - 1) ;
-  }
-
-  // the remaining N * (N-1) / 2 component
-  idx = N ;
-  for (int i = 0 ; i < N ; i ++)
-    for (int j = i+1 ; j < N; j ++)
-    {
-      ret[idx] = 0 ;
-      i0 = i * N; j0 = j * N ;
-      for (int j1 = 0 ; j1 < N; j1 ++)
-	ret[idx] += x[i0 + j1] * x[j0 + j1] ;
-      idx ++ ;
-    }
-}
-
-double trace(vector<double> & x)
-{
-  double s;
-  s = 0 ;
-  for (int i = 0 ; i < N; i ++)
-    s += x[i * N + i];
-  return s;
-}
-
-int check_determinant(vector<double> & x)
-{
-  int info, flag ;
-  double s ;
-
-  for (int i = 0 ; i < N * N ; i ++)
-    mat_x[i] = x[i] ;
-
-  dgetrf_(&N, &N, mat_x, &N, ipiv, &info);
-
-  s = 1.0 ;
-  for (int i = 0 ; i < N; i ++)
-    s *= mat_x[i * N + i] ;
-
-  for (int i = 0 ; i < N; i ++)
-    if (ipiv[i] != i+1) s *= -1 ;
-
-  if (fabs(s-1.0) > determinant_tol)
-  {
-    flag = 0 ;
-    if (verbose_flag == 1)
-      log_file << "determinant check failed!\t det=" << s << "\n" ;
-  }
-  else flag = 1;
-
-  return flag ;
-}
-
-// gradient of the reaction coordinate functions
-//
-// grad is a matrix of size (k, d) 
-//
-void grad_xi(vector<double> & x, vector<vector<double> > & grad)
-{
-  int idx ;
-  for (int i = 0; i < N; i ++)
-  {
-    fill(grad[i].begin(), grad[i].end(), 0) ;
-    for (int j = 0 ; j < N; j ++)
-      grad[i][i * N + j] = x[i * N + j] ;
-  }
-  idx = N ; 
-  for (int i = 0 ; i < N ; i ++)
-    for (int j = i+1 ; j < N; j ++)
-    {
-      fill(grad[idx].begin(), grad[idx].end(), 0) ;
-      for (int j0 = 0 ; j0 < N; j0 ++)
-      {
-	grad[idx][i * N + j0] = x[j * N + j0] ;
-	grad[idx][j * N + j0] = x[i * N + j0] ;
-      }
-      idx ++;
-    }
-}
 
 void allocate_mem()
 {
@@ -157,6 +54,7 @@ void allocate_mem()
 
   v_vec.resize(d) ;
   v_vec_prime.resize(d) ;
+  trace_series.resize(n) ;
 }
 
 void deallocate_mem() 
@@ -168,26 +66,6 @@ void deallocate_mem()
   free(ipiv) ;
   free(linear_sol) ;
   free(mat_x) ;
-}
-
-double vec_dot(vector<double> & v1, vector<double> & v2) 
-{
-  double s ;
-  s = 0 ;
-  for (int i = 0 ; i < v1.size(); i ++)
-    s += v1[i] * v2[i] ;
-  return s;
-}
-
-double distance_to_levelset(vector<double> & x)
-{
-  vector<double> tmp_vec ;
-  double eps ;
-  tmp_vec.resize(k) ;
-  xi(x, tmp_vec) ;
-
-  eps = sqrt(vec_dot(tmp_vec, tmp_vec)) ;
-  return eps ;
 }
 
 // check orthogonality
@@ -284,24 +162,6 @@ void qr_decomp(vector<vector<double> > & grad, vector<vector<double> > & t_vec)
     log_file << "finished" << endl ;
 
   check_orthognality(grad, t_vec) ;
-}
-
-/* 
- * Initialize the seed of random numbers depending on the cpu time 
- */
-void init_rand_generator()
-{
-  long is1, is2 ;
-  long current_time ;
-
-  char phrase[100] ;
-
-  current_time = time(NULL) ;
-
-  sprintf( phrase, "%ld", current_time ) ;
-
-  phrtsd(phrase, &is1, &is2) ;
-  setall(is1, is2) ;
 }
 
 // randomly generate a tangent vector 
@@ -463,11 +323,11 @@ int main ( int argc, char * argv[] )
 
   read_config() ;
 
+  mcmc_flag = 1 ;
   orthogonal_tol = 1e-14 ;
   determinant_tol = 1e-10 ;
-  // residual for Newton method 
-  eps_tol = 1e-12 ;
-  size_s = sqrt(2.0 * h) ;
+
+  size_s = sqrt(2.0 * h_mcmc) ;
 
   // tolerance of reversibility check
   reverse_tol = 1e-10 ;
@@ -489,12 +349,6 @@ int main ( int argc, char * argv[] )
   determinant_counter = 0 ;
 
   mean_xi_distance = 0 ;
-  mean_trace = 0 ;
-
-  // statistics for output 
-  // divied [-trace_b, trace_b] to n_bins with equal width
-  bin_width = 2.0 * trace_b  / n_bins ;
-  counter_of_each_bin.resize(n_bins, 0) ;
 
   init_rand_generator();
 
@@ -539,22 +393,12 @@ int main ( int argc, char * argv[] )
   // for the initial state, fine the orthogonal vectors of tangent space by QR decomposition 
   qr_decomp(grad_vec, tangent_vec_array) ;
 
-  sprintf(buf, "./data/ex4_mcmc_traj_%d.txt", N) ;
-  out_file.open(buf) ;
-  out_file << n / output_every_step << endl ;
-
   for (int i = 0 ; i < n ; i ++)
   {
     if (verbose_flag == 1)
       log_file << "\n==== Generate " << i << "th sample...\n" ;
 
-    tmp = trace(state) ;
-    idx = int ((tmp + trace_b) / bin_width) ;
-    counter_of_each_bin[idx] ++ ;
-    mean_trace += tmp ;
-
-    if (i % output_every_step == 0)
-      out_file << tmp << ' ' ;
+    trace_series[i] = trace(state) ;
 
     // randomly generate a vector on the (d-k)-dimensional tangent space
     generate_v(v_vec) ;
@@ -666,7 +510,6 @@ int main ( int argc, char * argv[] )
      *
      */
 
-    /*
     // move state y along tangent vector v'
     for (int ii = 0 ; ii < d; ii ++)
       tmp_state[ii] = y_state[ii] + v_vec_prime[ii] ;
@@ -702,7 +545,6 @@ int main ( int argc, char * argv[] )
       if (verbose_flag == 1)
 	log_file << "Rejected by reversibility check\n" ;
     }
-    */
 
     // move to the new state
     state = y_state ;
@@ -710,8 +552,6 @@ int main ( int argc, char * argv[] )
     grad_vec = grad_vec_y ;
     tangent_vec_array = tangent_vec_array_y ;
   }
-
-  out_file.close() ;
 
   int tot_rej ;
 
@@ -725,22 +565,11 @@ int main ( int argc, char * argv[] )
   printf("\nRejection rate: Forward\tReverse\tReversibility\tMetrolis\tDeterminant\tTotal\n") ;
   printf("\t\t %.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", forward_newton_counter * 1.0 / n, backward_newton_counter * 1.0 / n, reverse_check_counter *1.0/n, metropolis_counter * 1.0 / n, determinant_counter * 1.0 / n, tot_rej * 1.0 / n) ;
 
-  printf("mean trace: %.4f\n", mean_trace / n) ;
+  analysis_data_and_output() ;
 
   printf("max |v|, when Newton converges : %.4e\n", max_v_norm_converged) ; 
   printf("min |v|, when Newton doesn't converge : %.4e\n", min_v_norm_not_converged) ; 
 
-  sprintf(buf, "./data/ex4_mcmc_counter_%d.txt", N) ;
-  out_file.open(buf) ;
-
-  out_file << n << ' ' << trace_b << ' ' << n_bins << endl ;
-
-  for (int i = 0 ; i < n_bins ; i++)
-  {
-    out_file << counter_of_each_bin[i] << ' ';
-  }
-  out_file << endl ;
-  out_file.close() ;
 
   sprintf(buf, "./data/ex4_mcmc_v_norm_counter_%d.txt", N) ;
   out_file.open(buf) ;

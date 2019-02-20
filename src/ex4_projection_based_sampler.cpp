@@ -1,140 +1,11 @@
-#include "ex4_no_mcmc.h"
+#include "ex4.h"
 
-const double pi = atan(1) * 4 ;
-
-int n, N, d, k, tot_step ;
-int n_bins, output_every_step, maximal_try_number, tot_try_number ;
-
-int dt_too_large_counter ;
-
-double h, beta, noise_coeff, dt, eps_tol ;
-
-double bin_width, trace_b ;
-
-double mean_xi_distance ;
-
-double mean_trace ;
-
-int verbose_flag ;
-ofstream log_file ;
+int dt_too_large_counter, tot_ode_step ;
+double beta, noise_coeff ;
 
 int read_config() ;
 
-vector<double> state, new_state, counter_of_each_bin ;
-
-vector<vector<double> > grad_vec;
-
-double * mat_x ; 
-int *ipiv ;
-
-double determinant_tol ;
-
-// 
-// the vector-valued reaction coordinate function: N + N * (N-1) / 2
-//
-void xi( vector<double> & x, vector<double> & ret )
-{
-  int idx, i0, j0 ;
-  // first N component 
-  for (int i = 0 ; i < N; i ++)
-  {
-    ret[i] = 0 ;
-    i0 = i * N ;
-    for (int j = 0 ; j < N; j ++)
-      ret[i] += x[i0+j] * x[i0+j] ;
-    ret[i] = 0.5 * (ret[i] - 1) ;
-  }
-
-  // the remaining N * (N-1) / 2 component
-  idx = N ;
-  for (int i = 0 ; i < N ; i ++)
-    for (int j = i+1 ; j < N; j ++)
-    {
-      ret[idx] = 0 ;
-      i0 = i * N; j0 = j * N ;
-      for (int j1 = 0 ; j1 < N; j1 ++)
-	ret[idx] += x[i0 + j1] * x[j0 + j1] ;
-      idx ++ ;
-    }
-}
-
-double trace(vector<double> & x)
-{
-  double s;
-  s = 0 ;
-  for (int i = 0 ; i < N; i ++)
-    s += x[i * N + i];
-  return s;
-}
-
-int check_determinant(vector<double> & x)
-{
-  int info, flag ;
-  double s ;
-
-  for (int i = 0 ; i < N * N ; i ++)
-    mat_x[i] = x[i] ;
-
-  dgetrf_(&N, &N, mat_x, &N, ipiv, &info);
-
-  s = 1.0 ;
-  for (int i = 0 ; i < N; i ++)
-    s *= mat_x[i * N + i] ;
-
-  for (int i = 0 ; i < N; i ++)
-    if (ipiv[i] != i+1) s *= -1 ;
-
-  if (fabs(s-1.0) > determinant_tol)
-  {
-    flag = 0 ;
-    if (verbose_flag == 1)
-      log_file << "determinant check failed!\t det=" << std::scientific << s << "\n" ;
-  }
-  else flag = 1;
-
-  return flag ;
-}
-
-// gradient of the reaction coordinate functions
-//
-// grad is a matrix of size (k, d) 
-//
-void grad_xi(vector<double> & x, vector<vector<double> > & grad)
-{
-  int idx ;
-  for (int i = 0; i < N; i ++)
-  {
-    fill(grad[i].begin(), grad[i].end(), 0) ;
-    for (int j = 0 ; j < N; j ++)
-      grad[i][i * N + j] = x[i * N + j] ;
-  }
-  idx = N ; 
-  for (int i = 0 ; i < N ; i ++)
-    for (int j = i+1 ; j < N; j ++)
-    {
-      fill(grad[idx].begin(), grad[idx].end(), 0) ;
-      for (int j0 = 0 ; j0 < N; j0 ++)
-      {
-	grad[idx][i * N + j0] = x[j * N + j0] ;
-	grad[idx][j * N + j0] = x[i * N + j0] ;
-      }
-      idx ++;
-    }
-}
-
-double distance_to_levelset(vector<double> & x)
-{
-  vector<double> tmp_vec ;
-  double eps ;
-  tmp_vec.resize(k) ;
-  xi(x, tmp_vec) ;
-
-  eps = 0 ;
-  for (int i = 0 ; i < k; i ++)
-    eps += tmp_vec[i] * tmp_vec[i] ;
-
-  return sqrt(eps) ;
-}
+vector<double> state, new_state ;
 
 /*
  * vector field of the flow map
@@ -201,7 +72,7 @@ int theta_projection(vector<double> & state)
     }
   }
 
-  tot_step += step ;
+  tot_ode_step += step ;
 
   if (decrease_counter > 0)
   {
@@ -249,24 +120,6 @@ void update_state_flow_map(vector<double> & state, vector<double> & new_state )
     log_file << "\tODE steps = " << step << endl << "3. Distance after projection = " << distance_to_levelset(new_state) << endl ;
 }
 
-/* 
- * Initialize the seed of random numbers depending on the cpu time 
- */
-void init_rand_generator()
-{
-  long is1, is2 ;
-  long current_time ;
-
-  char phrase[100] ;
-
-  current_time = time(NULL) ;
-
-  sprintf( phrase, "%ld", current_time ) ;
-
-  phrtsd(phrase, &is1, &is2) ;
-  setall(is1, is2) ;
-}
-
 void allocate_mem()
 {
   ipiv = (int *) malloc( k * sizeof(int) ) ;
@@ -291,29 +144,22 @@ int main ( int argc, char * argv[] )
 {
   char buf[50] ;
   ofstream out_file ;
-  int idx, determinant_flag, new_state_sucess_flag, try_number ;
-  double T, tmp ;
+  int idx, determinant_flag, new_state_sucess_flag, try_number, tot_try_number ;
 
   clock_t start , end ;
 
   read_config() ;
-  // compute the total steps
-  T = n * h ;
 
   // step-size in solving ODE or optimization 
   //
+  mcmc_flag = 0 ;
   beta = 1.0 ;
   mean_xi_distance = 0 ;
   determinant_tol = 1e-3 ;
 
-  tot_step = 0 ; 
+  tot_ode_step = 0 ; 
+  tot_try_number = 0 ;
   dt_too_large_counter = 0 ;
-  mean_trace = 0 ;
-
-  // statistics for output 
-  // divied [-trace_b, trace_b] to n_bins with equal width
-  bin_width = 2.0 * trace_b  / n_bins ;
-  counter_of_each_bin.resize(n_bins, 0) ;
 
   init_rand_generator();
   noise_coeff = sqrt(2.0 / beta * h) ;
@@ -341,21 +187,10 @@ int main ( int argc, char * argv[] )
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
   printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
 
-  sprintf(buf, "./data/ex4_no_mcmc_traj_%d.txt", N) ;
-  out_file.open(buf) ;
-  out_file << n / output_every_step << endl ;
-
   for (int i = 0 ; i < n ; i ++)
   {
     //compute histgram during the simulation
-    tmp = trace(state) ;
-    idx = int ((tmp + trace_b) / bin_width) ;
-    counter_of_each_bin[idx] ++ ;
-
-    mean_trace += tmp ;
-
-    if (i % output_every_step == 0)
-      out_file << tmp << ' ' ;
+    trace_series[i] = trace(state) ;
 
     try_number = 0 ;
     new_state_sucess_flag = 0;
@@ -394,26 +229,13 @@ int main ( int argc, char * argv[] )
     }
   }
 
-  out_file.close() ;
-
-  printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
+  printf("\naverage iteration steps = %.2f\n", tot_ode_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   printf("\nAverage try number = %.1f\n", tot_try_number * 1.0 / n) ;
   printf("\nProb. when dt is large = %.4f\n", dt_too_large_counter * 1.0 / n) ;
 
-  printf("mean trace: %.4f\n", mean_trace / n) ;
+  analysis_data_and_output() ;
 
-  sprintf(buf, "./data/ex4_no_mcmc_counter_%d.txt", N) ;
-  out_file.open(buf) ;
-
-  out_file << n << ' ' << trace_b << ' ' << n_bins << endl ;
-
-  for (int i = 0 ; i < n_bins ; i++)
-  {
-    out_file << counter_of_each_bin[i] << ' ';
-  }
-  out_file << endl ;
-  out_file.close() ;
   log_file.close() ;
 
   end = clock() ;
