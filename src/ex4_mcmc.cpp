@@ -393,10 +393,22 @@ int main ( int argc, char * argv[] )
   // for the initial state, fine the orthogonal vectors of tangent space by QR decomposition 
   qr_decomp(grad_vec, tangent_vec_array) ;
 
+  int progress ;
+  progress = 1 ;
+
   for (int i = 0 ; i < n ; i ++)
   {
     if (verbose_flag == 1)
       log_file << "\n==== Generate " << i << "th sample...\n" ;
+
+    if (i >= progress * 0.01 * n)
+    {
+      end = clock() ;
+      printf("\ni=%d, n=%d, %.1f\%% finished.\n", i, n, progress * 1.0 ) ;
+      printf("  %.1fsec, %.1esec per step,  remaining time: %4.1fmin\n  Newton success rate=%.2f,  average xi=%.2e\n", (end-start) * 1.0 / CLOCKS_PER_SEC, (end - start) * 1.0 / CLOCKS_PER_SEC / i, 
+	  (end - start) * 1.0 / CLOCKS_PER_SEC * (n-i) / (i * 60.0), (i-forward_newton_counter) * 1.0 / i, mean_xi_distance / i );
+      progress ++ ;
+    }
 
     trace_series[i] = trace(state) ;
 
