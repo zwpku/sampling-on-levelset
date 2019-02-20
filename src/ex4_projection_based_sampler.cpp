@@ -132,6 +132,8 @@ void allocate_mem()
   grad_vec.resize(k) ;
   for (int i = 0 ; i < k; i ++)
     grad_vec[i].resize(d) ;
+
+  trace_series.resize(n) ;
 }
 
 void deallocate_mem() 
@@ -185,7 +187,7 @@ int main ( int argc, char * argv[] )
   start = clock() ;
 
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
-  printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
+  printf("n=%d\t h=%.3e\toutput_step =%d \n", n, h, output_every_step ) ;
 
   for (int i = 0 ; i < n ; i ++)
   {

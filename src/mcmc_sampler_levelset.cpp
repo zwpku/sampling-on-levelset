@@ -325,12 +325,12 @@ int main ( int argc, char * argv[] )
 
   mcmc_flag = 1 ;
   orthogonal_tol = 1e-14 ;
-  determinant_tol = 1e-10 ;
+  determinant_tol = 1e-5 ;
 
   size_s = sqrt(2.0 * h_mcmc) ;
 
   // tolerance of reversibility check
-  reverse_tol = 1e-10 ;
+  reverse_tol = 1e-8 ;
 
   // total newton steps performed so far
   tot_newton_step = 0 ; 
@@ -385,7 +385,7 @@ int main ( int argc, char * argv[] )
 
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
   printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
-  printf("h=%.3e,\t size_s=%.3e\n", h, size_s) ;
+  printf("h (mcmc) =%.3e,\t size_s=%.3e\n", h_mcmc, size_s) ;
 
   // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
   grad_xi(state, grad_vec) ;
@@ -543,7 +543,7 @@ int main ( int argc, char * argv[] )
       reverse_check_counter ++ ;
 
       if (verbose_flag == 1)
-	log_file << "Rejected by reversibility check\n" ;
+	log_file << "Rejected by reversibility check " << sqrt(tmp) << '>' << reverse_tol << endl ;
     }
 
     // move to the new state
@@ -567,7 +567,7 @@ int main ( int argc, char * argv[] )
 
   analysis_data_and_output() ;
 
-  printf("max |v|, when Newton converges : %.4e\n", max_v_norm_converged) ; 
+  printf("\nmax |v|, when Newton converges : %.4e\n", max_v_norm_converged) ; 
   printf("min |v|, when Newton doesn't converge : %.4e\n", min_v_norm_not_converged) ; 
 
 

@@ -59,7 +59,7 @@ int check_determinant(vector<double> & x)
   {
     flag = 0 ;
     if (verbose_flag == 1)
-      log_file << "determinant check failed!\t det=" << std::scientific << s << "\n" ;
+      log_file << "determinant check failed!\t det=" << std::scientific << s << ' ' << fabs(s-1.0) << ' ' << determinant_tol << "\n" ;
   }
   else flag = 1;
 
@@ -162,6 +162,8 @@ void analysis_data_and_output()
   for (int i = 0 ; i < n ; i ++)
   {
     idx = int ((trace_series[i] + trace_b) / bin_width) ;
+    if (idx >= n_bins) idx = n_bins - 1;
+    if (idx < 0) idx = 0 ;
     counter_of_each_bin[idx] ++ ;
   }
   if (mcmc_flag == 0)
@@ -204,7 +206,7 @@ void analysis_data_and_output()
   sigma = sqrt(dd / n) ;
   tau = dd / cor[0] ;
 
-  printf("n=%d\tmax_lag=%d\tmean=%.4e\tsigma=%.4e\ttau=%.4e\n", n, max_lag, s, sigma, tau) ;
+  printf("\nn=%d\tmax_lag=%d\tmean=%.4e\tsigma=%.4e\ttau=%.4e\n", n, max_lag, s, sigma, tau) ;
 
   if (mcmc_flag == 0)
     sprintf(buf, "./data/ex4_no_mcmc_acf_%d.txt", N) ;
