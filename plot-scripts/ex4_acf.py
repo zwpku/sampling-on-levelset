@@ -13,19 +13,21 @@ plt.figure(figsize=(8, 6))
 axs = plt.gca()
 
 N = int (raw_input('N='))
-mcmc_flag = int (raw_input('mcmc? (0/1)'))
+mcmc_flag = int (raw_input('no-mcmc, mcmc, or both? (0/1/2)'))
 
-if mcmc_flag == 1 :
-    data_file = open('../working_dir/data/ex4_mcmc_acf_%d.txt' % N, 'r')
-else :
+if mcmc_flag == 0 or mcmc_flag == 2 :
     data_file = open('../working_dir/data/ex4_no_mcmc_acf_%d.txt' % N, 'r')
+    maxlag, mean_val, sigma, tau = [ float (x) for x in data_file.readline().split() ]
+    maxlag = int (maxlag)
+    acf_data = [ float(x) for x in data_file.readline().split() ]
+    axs.plot(acf_data, color='k',linewidth=1.5, label=r'no-mcmc, acf') 
 
-maxlag, mean_val, sigma, tau = [ float (x) for x in data_file.readline().split() ]
-maxlag = int (maxlag)
-  
-acf_data = [ float(x) for x in data_file.readline().split() ]
-
-axs.plot(acf_data, color='k',linewidth=1.5, label=r'acf') 
+if mcmc_flag == 1 or mcmc_flag == 2 :
+    data_file = open('../working_dir/data/ex4_mcmc_acf_%d.txt' % N, 'r')
+    maxlag, mean_val, sigma, tau = [ float (x) for x in data_file.readline().split() ]
+    maxlag = int (maxlag)
+    acf_data = [ float(x) for x in data_file.readline().split() ]
+    axs.plot(acf_data, color='r',linewidth=1.5, label=r'mcmc, acf') 
 
 axs.set_xlim(0, 100)
 axs.set_ylim(-0.1, 1.0)
@@ -39,9 +41,11 @@ axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 plt.show()
 
-if mcmc_flag == 1:
+if mcmc_flag == 0:
+    fig_file_name = '../fig/ex4_no_mcmc_acf_%d.eps' % N
+elif mcmc_flag == 1:
     fig_file_name = '../fig/ex4_mcmc_acf_%d.eps' % N
 else :
-    fig_file_name = '../fig/ex4_no_mcmc_acf_%d.eps' % N
+    fig_file_name = '../fig/ex4_both_acf_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')

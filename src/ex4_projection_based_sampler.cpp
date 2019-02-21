@@ -1,7 +1,10 @@
 #include "ex4.h"
 
 int dt_too_large_counter, tot_ode_step ;
-double beta, noise_coeff ;
+double beta, noise_coeff, ode_rescale_factor ;
+
+int ref_ode_sol_flag, ref_ode_tot_step, ref_ode_c_step ;
+double ref_ode_distance ;
 
 int read_config() ;
 
@@ -10,20 +13,24 @@ vector<double> state, new_state ;
 /*
  * vector field of the flow map
  */
-void f(vector<double> & x, vector<double> & force)
+void f(vector<double> & x, vector<double> & force, int ref_flag)
 {
   double s ;
   vector<double> tmp_xi ;
   tmp_xi.resize(k) ;
   xi(x, tmp_xi) ;
+  s = sqrt( vec_dot(tmp_xi, tmp_xi) ) ;
   grad_xi(x, grad_vec) ;
 
   for (int i = 0 ; i < d; i ++)
   {
     force[i] = 0 ;
     for (int j = 0; j < k ; j ++)
-      force[i] += tmp_xi[j] * grad_vec[j][i]; 
-    force[i] *= -1 ;
+      force[i] += tmp_xi[j] * grad_vec[j][i] ; 
+    if (ref_flag == 0)
+      force[i] *= -1.0 * pow(s, - ode_rescale_factor) ;
+    else 
+      force[i] *= -1.0 ;
   }
 }
 
@@ -33,7 +40,7 @@ void f(vector<double> & x, vector<double> & force)
  * The ODE is solved using the Runge-Kutta method. 
  *
  */
-int theta_projection(vector<double> & state)
+int theta_projection(vector<double> & state, double init_dt, int ref_flag )
 {
   double eps_old, eps, cdt ;
   int step, decrease_counter ;
@@ -43,19 +50,19 @@ int theta_projection(vector<double> & state)
 
   eps = distance_to_levelset(state) ;
   step = 0 ; 
-  cdt = dt ;
+  cdt = init_dt ;
   decrease_counter = 0 ;
   while (eps > eps_tol) // Runge-Kutta method
   {
     eps_old = eps ;
     x0 = state ; x = state ;
-    f(x, k1) ;
+    f(x, k1, ref_flag) ;
     for (int i = 0 ; i < d; i ++)
       x[i] = state[i] + 0.5 * cdt * k1[i] ;
-    f(x, k2) ;
+    f(x, k2, ref_flag) ;
     for (int i = 0 ; i < d; i ++)
       x[i] = state[i] + 0.75 * cdt * k2[i] ;
-    f(x, k3) ;
+    f(x, k3, ref_flag) ;
     for (int i = 0 ; i < d; i ++)
       state[i] += cdt * (2.0 / 9 * k1[i] + 1.0 / 3 * k2[i] + 4.0 / 9 * k3[i]) ;
 
@@ -65,14 +72,14 @@ int theta_projection(vector<double> & state)
     {
       state = x0;
       if (verbose_flag == 1)
-        log_file << "Warning: distance increased from " << eps_old << " to " << eps << ". Decrease step-size: " << cdt << " to " << cdt * 0.5 << endl ;
+        log_file << "Warning: in step " << step << ", distance increased from " << eps_old << " to " << eps << ". Decrease step-size: " << cdt << " to " << cdt * 0.5 << endl ;
       cdt *= 0.5 ;
       eps = eps_old ;
       decrease_counter ++ ;
     }
   }
 
-  tot_ode_step += step ;
+  if (ref_flag == 0) tot_ode_step += step ;
 
   if (decrease_counter > 0)
   {
@@ -114,10 +121,34 @@ void update_state_flow_map(vector<double> & state, vector<double> & new_state )
   /* 
    * Step 2: projection using the map $\Theta$.
    */
-  step = theta_projection(new_state) ;
 
+  // test accuracy using a small step-size
+
+  vector<double> new_state_tmp ;
+  if (ref_ode_sol_flag == 1) new_state_tmp = new_state ;
+
+  step = theta_projection(new_state, dt, 0) ;
   if (verbose_flag == 1)
     log_file << "\tODE steps = " << step << endl << "3. Distance after projection = " << distance_to_levelset(new_state) << endl ;
+
+  if (ref_ode_sol_flag == 1)  // compare to the reference solution of the ODE
+  {
+    int step_test ;
+    // solve the ODE with small step-size, no rescaling.
+    step_test = theta_projection(new_state_tmp, dt * 0.01, 1) ;
+
+    // compute the l^2 distance of the ODE solutions.
+    tmp = 0;
+    for (int ii = 0; ii < d; ii++)
+      tmp += fabs(new_state[ii] - new_state_tmp[ii]) * fabs(new_state[ii] - new_state_tmp[ii]) ;
+
+    ref_ode_distance += sqrt(tmp) ;
+
+    if (verbose_flag == 1)
+      log_file << "Distance of ODE solutions=" << sqrt(tmp) << ", ODE steps =" << step << ',' << step_test << endl ; 
+
+    ref_ode_c_step ++ ;
+  }
 }
 
 void allocate_mem()
@@ -156,6 +187,7 @@ int main ( int argc, char * argv[] )
   //
   mcmc_flag = 0 ;
   beta = 1.0 ;
+  ode_rescale_factor = 0.5 ;
   mean_xi_distance = 0 ;
   determinant_tol = 1e-3 ;
 
@@ -192,8 +224,16 @@ int main ( int argc, char * argv[] )
   int progress ;
   progress = 1 ;
 
+  ref_ode_distance = 0.0 ;
+  ref_ode_tot_step = 20 ;
+  ref_ode_c_step = 0;
+  ref_ode_sol_flag = 1;
+
   for (int i = 0 ; i < n ; i ++)
   {
+    if (verbose_flag == 1)
+      log_file << "\n==== Generate " << i << "th sample...\n" ;
+
     //compute histgram during the simulation
     trace_series[i] = trace(state) ;
 
@@ -209,6 +249,13 @@ int main ( int argc, char * argv[] )
     new_state_sucess_flag = 0;
     while (try_number < maximal_try_number)
     {
+      if (ref_ode_c_step == ref_ode_tot_step) 
+      {
+	ref_ode_sol_flag = 0 ;
+	ref_ode_c_step ++ ;
+	printf("average ODE error = %.2e\n", ref_ode_distance / ref_ode_tot_step) ;
+      }
+      
       update_state_flow_map(state, new_state) ;
 
       // check the determinant of the new state
@@ -245,7 +292,7 @@ int main ( int argc, char * argv[] )
   printf("\naverage iteration steps = %.2f\n", tot_ode_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
   printf("\nAverage try number = %.1f\n", tot_try_number * 1.0 / n) ;
-  printf("\nProb. when dt is large = %.4f\n", dt_too_large_counter * 1.0 / n) ;
+  printf("\nProb. when dt is large = %.4f\n", dt_too_large_counter * 1.0 / tot_try_number ) ;
 
   analysis_data_and_output() ;
 

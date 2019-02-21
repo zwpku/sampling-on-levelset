@@ -13,21 +13,23 @@ plt.figure(figsize=(8, 4))
 axs = plt.gca()
 
 N = int (raw_input('N='))
-mcmc_flag = int (raw_input('mcmc? (0/1)'))
+mcmc_flag = int (raw_input('no-mcmc, mcmc, or both? (0/1/2)'))
 
-if mcmc_flag == 1 :
-    data_file = open('../working_dir/data/ex4_mcmc_counter_%d.txt' % N, 'r')
-else :
+if mcmc_flag == 0 or mcmc_flag == 2 :
     data_file = open('../working_dir/data/ex4_no_mcmc_counter_%d.txt' % N, 'r')
+    n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
+    bin_width = 2.0 * xb / n_bin 
+    counter_data = [ (float(x) / (n * bin_width)) for x in data_file.readline().split() ]
+    x_vec = np.linspace( -xb + bin_width * 0.5, xb - bin_width*0.5, n_bin, endpoint=True )
+    axs.plot(x_vec, counter_data, color='k',linewidth=1.5, label=r'no-mcmc, empirical') 
 
-n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
-bin_width = 2.0 * xb / n_bin 
-  
-counter_data = [ (float(x) / (n * bin_width)) for x in data_file.readline().split() ]
-
-x_vec = np.linspace( -xb + bin_width * 0.5, xb - bin_width*0.5, n_bin, endpoint=True )
-
-axs.plot(x_vec, counter_data, color='k',linewidth=1.5, label=r'empirical') 
+if mcmc_flag == 1 or mcmc_flag == 2 :
+    data_file = open('../working_dir/data/ex4_mcmc_counter_%d.txt' % N, 'r')
+    n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
+    bin_width = 2.0 * xb / n_bin 
+    counter_data = [ (float(x) / (n * bin_width)) for x in data_file.readline().split() ]
+    x_vec = np.linspace( -xb + bin_width * 0.5, xb - bin_width*0.5, n_bin, endpoint=True )
+    axs.plot(x_vec, counter_data, color='k',linestyle='--', linewidth=1.5, label=r'mcmc, empirical') 
 
 gaussian_density = [ exp(-x * x * 0.5) / sqrt(2 * pi) for x in x_vec]
 axs.plot(x_vec, gaussian_density, color='r',linewidth=1.5, label=r'standard Gaussian') 
@@ -44,9 +46,11 @@ axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 plt.show()
 
-if mcmc_flag == 1:
+if mcmc_flag == 0:
+    fig_file_name = '../fig/ex4_no_mcmc_trace_dist_%d.eps' % N
+elif mcmc_flag == 1:
     fig_file_name = '../fig/ex4_mcmc_trace_dist_%d.eps' % N
 else :
-    fig_file_name = '../fig/ex4_no_mcmc_trace_dist_%d.eps' % N
+    fig_file_name = '../fig/ex4_both_trace_dist_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')
