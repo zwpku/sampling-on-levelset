@@ -24,6 +24,9 @@ int n, scheme_id ;
 int tot_step ;
 int n_bins ;
 
+int ref_ode_sol_flag, ref_ode_tot_step, ref_ode_c_step ;
+double ref_ode_distance, ode_rescale_factor ;
+
 double h, beta , noise_coeff, dt, eps_tol ;
 
 /*
@@ -36,6 +39,8 @@ double mean_xi_distance ;
 double pot_coeff ; 
 
 vector<double> state, counter_of_each_bin ;
+
+ofstream log_file ;
 
 // the reaction coordinate function 
 double xi(vector<double> & x)
@@ -67,12 +72,18 @@ double grad_U(vector<double> & x, vector<double> & grad)
 /*
  * vector field of the flow map
  */
-void f(vector<double> & x, vector<double> & force)
+void f(vector<double> & x, vector<double> & force, int ref_flag )
 {
   double tmp ;
   tmp = xi(x) ;
   force[0] = -tmp * (x[0] / c2 - AA * x[1]) ;
   force[1] = -tmp * (AA * x[0] / c2 + x[1]) ;
+
+  if (ref_flag == 0)
+  {
+    force[0] *=  pow(fabs(tmp), -ode_rescale_factor) ;
+    force[1] *=  pow(fabs(tmp), -ode_rescale_factor) ;
+  }
 }
 
 double norm(vector<double> & x)
@@ -86,34 +97,42 @@ double norm(vector<double> & x)
  * The ODE is solved using the Runge-Kutta method. 
  *
  */
-void theta_projection(vector<double> & state)
+int theta_projection( vector<double> & state, double init_dt, int ref_flag )
 {
   double eps, cdt , eps_old ;
   int step ;
-  vector<double> x, k1, k2, k3 ;
+  vector<double> x, x0, k1, k2, k3 ;
 
   k1.resize(2) ; k2.resize(2) ; k3.resize(2) ;
 
   eps = fabs(xi(state)) ;
   step = 0 ; 
-  cdt = dt ;
+  cdt = init_dt ;
   while (eps > eps_tol) // Runge-Kutta method
   {
     eps_old = eps ;
-    x = state ;
-    f(x, k1) ;
+    x = state ; x0 = state ;
+    f(x, k1, ref_flag) ;
     x[0] = state[0] + 0.5 * cdt * k1[0] ; x[1] = state[1] + 0.5 * cdt * k1[1] ;
-    f(x, k2) ;
+    f(x, k2, ref_flag) ;
     x[0] = state[0] + 0.75 * cdt * k2[0] ; x[1] = state[1] + 0.75 * cdt * k2[1] ;
-    f(x, k3) ;
+    f(x, k3, ref_flag) ;
     state[0] += cdt * (2.0 / 9 * k1[0] + 1.0 / 3 * k2[0] + 4.0 / 9 * k3[0]) ;
     state[1] += cdt * (2.0 / 9 * k1[1] + 1.0 / 3 * k2[1] + 4.0 / 9 * k3[1]) ;
     step ++ ;
     eps = fabs(xi(state)) ;
 
-//    printf("eps=%.4e\t%.4e\t%.3f\n", eps, norm(k3) * norm(k3), 1 - norm(k3) / eps * (norm(k3) / eps) * cdt  ) ;
+    if (eps > eps_old)
+    {
+      state = x0 ;
+      //log_file << "Warning: in step " << step << ", distance increased from " << eps_old << " to " << eps << ". Decrease step-size: " << cdt << " to " << cdt * 0.5 << endl ;
+      cdt *= 0.5 ;
+      eps = eps_old ;
+    }
   }
-  tot_step += step ;
+  if (ref_flag == 0) tot_step += step ;
+
+  return step ;
 }
 
 /*
@@ -139,10 +158,36 @@ void update_state_flow_map(vector<double> & state )
   }
 
   mean_xi_distance += fabs(xi(state)) ;
+
+  // test accuracy using a small step-size
+
+  vector<double> new_state_tmp ;
+  if (ref_ode_sol_flag == 1) new_state_tmp = state ;
+
   /* 
    * Step 2: projection using the map $\Theta$.
    */
-  theta_projection(state) ;
+  int step ;
+  step = theta_projection(state, dt, 0) ;
+
+  if (ref_ode_sol_flag == 1)  // compare to the reference solution of the ODE
+  {
+    int step_test ;
+    // solve the ODE with small step-size, no rescaling.
+    step_test = theta_projection(new_state_tmp, dt * 0.01, 1) ;
+
+    // compute the l^2 distance of the ODE solutions.
+    double tmp ;
+    tmp = 0;
+    for (int ii = 0; ii < 2; ii++)
+      tmp += fabs(state[ii] - new_state_tmp[ii]) * fabs(state[ii] - new_state_tmp[ii]) ;
+
+    ref_ode_distance += sqrt(tmp) ;
+
+    log_file << "Distance of ODE solutions=" << sqrt(tmp) << ", ODE steps =" << step << ',' << step_test << endl ; 
+
+    ref_ode_c_step ++ ;
+  }
 }
 
 /*
@@ -254,19 +299,19 @@ int main ( int argc, char * argv[] )
    */
   switch (scheme_id) {
     case 0 : 
-      n = 5000000 ;
+      n = 20000000 ;
       h = 0.010 ;
       break ;
    case 1 :
-      T = 30000 ;
-      h = 0.002 ;
+      n = 20000000;
+      h = 0.005 ;
       break ;
     case 2 :
-      T = 50000 ;
+      n = 20000000;
       h = 0.01 ;
       break ;
     case 3 :
-      T = 1000 ;
+      n = 20000000;
       h = 0.0001 ;
       break ;
   }
@@ -275,10 +320,13 @@ int main ( int argc, char * argv[] )
   T = n * h ;
   output_every_step = 1000 ;
   // step-size in solving ODE or optimization 
-  dt = 0.8 ;
+  dt = 0.1 ;
   beta = 1.0 ;
   mean_xi_distance = 0 ;
-  pot_coeff = 5.0 ;
+  pot_coeff = 0.0 ;
+
+  // this is the parameter \kappa in the paper
+  ode_rescale_factor = 0.5 ;
 
   c = 3.0 ;
   c2 = c*c ;
@@ -311,7 +359,16 @@ int main ( int argc, char * argv[] )
 
   out_file << n / output_every_step << endl ;
 
+  sprintf(buf, "./data/log_ex3_scheme_%d.txt", scheme_id) ;
+  log_file.open(buf) ;
+
   angle = 0 ;
+
+  ref_ode_distance = 0.0 ;
+  ref_ode_tot_step = 20 ;
+  ref_ode_c_step = 0;
+  ref_ode_sol_flag = 1;
+
   for (int i = 0 ; i < n ; i ++)
   {
     if (i % output_every_step == 0)
@@ -333,6 +390,14 @@ int main ( int argc, char * argv[] )
 	update_state_euler_sde(state) ;
 	break ;
     }
+
+    if ( (ref_ode_c_step == ref_ode_tot_step) && (scheme_id < 2) )
+      {
+	ref_ode_sol_flag = 0 ;
+	ref_ode_c_step ++ ;
+	printf("average ODE error = %.2e\n", ref_ode_distance / ref_ode_tot_step) ;
+      }
+
 
     //compute histgram during the simulation
     angle = atan2(state[1], state[0] / c) ;
@@ -361,6 +426,8 @@ int main ( int argc, char * argv[] )
 
   end = clock() ;
   printf("\n\nRuntime : %4.2f sec.\n\n", (end - start) * 1.0 / CLOCKS_PER_SEC ) ;
+
+  log_file.close() ;
 
   return 0; 
 }

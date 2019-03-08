@@ -1,0 +1,414 @@
+SO(N), N=
+SO(11),	d=121	k=66
+n=1000000	 h=2.200e-02	output_step =1 
+average ODE error = 2.02e-04
+
+i=10000, n=1000000, 1.0% finished. 
+  36.1sec, 3.6e-03sec per step,  remaining time: 59.6min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=20000, n=1000000, 2.0% finished. 
+  62.9sec, 3.1e-03sec per step,  remaining time: 51.3min
+  average ODE step=37.28,  average xi=2.70e+00
+
+i=30000, n=1000000, 3.0% finished. 
+  89.4sec, 3.0e-03sec per step,  remaining time: 48.2min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=40000, n=1000000, 4.0% finished. 
+  115.8sec, 2.9e-03sec per step,  remaining time: 46.3min
+  average ODE step=37.29,  average xi=2.70e+00
+
+i=50000, n=1000000, 5.0% finished. 
+  142.3sec, 2.8e-03sec per step,  remaining time: 45.1min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=60000, n=1000000, 6.0% finished. 
+  169.3sec, 2.8e-03sec per step,  remaining time: 44.2min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=70000, n=1000000, 7.0% finished. 
+  196.1sec, 2.8e-03sec per step,  remaining time: 43.4min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=80000, n=1000000, 8.0% finished. 
+  222.7sec, 2.8e-03sec per step,  remaining time: 42.7min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=90000, n=1000000, 9.0% finished. 
+  249.1sec, 2.8e-03sec per step,  remaining time: 42.0min
+  average ODE step=37.29,  average xi=2.70e+00
+
+i=100000, n=1000000, 10.0% finished. 
+  275.6sec, 2.8e-03sec per step,  remaining time: 41.3min
+  average ODE step=37.29,  average xi=2.70e+00
+
+i=110000, n=1000000, 11.0% finished. 
+  302.1sec, 2.7e-03sec per step,  remaining time: 40.7min
+  average ODE step=37.29,  average xi=2.70e+00
+
+i=120000, n=1000000, 12.0% finished. 
+  328.5sec, 2.7e-03sec per step,  remaining time: 40.2min
+  average ODE step=37.29,  average xi=2.70e+00
+
+i=130000, n=1000000, 13.0% finished. 
+  355.1sec, 2.7e-03sec per step,  remaining time: 39.6min
+  average ODE step=37.29,  average xi=2.70e+00
+
+i=140000, n=1000000, 14.0% finished. 
+  381.6sec, 2.7e-03sec per step,  remaining time: 39.1min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=150000, n=1000000, 15.0% finished. 
+  408.1sec, 2.7e-03sec per step,  remaining time: 38.5min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=160000, n=1000000, 16.0% finished. 
+  434.6sec, 2.7e-03sec per step,  remaining time: 38.0min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=170000, n=1000000, 17.0% finished. 
+  461.1sec, 2.7e-03sec per step,  remaining time: 37.5min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=180000, n=1000000, 18.0% finished. 
+  487.6sec, 2.7e-03sec per step,  remaining time: 37.0min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=190000, n=1000000, 19.0% finished. 
+  514.2sec, 2.7e-03sec per step,  remaining time: 36.5min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=200000, n=1000000, 20.0% finished. 
+  540.7sec, 2.7e-03sec per step,  remaining time: 36.0min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=210000, n=1000000, 21.0% finished. 
+  567.3sec, 2.7e-03sec per step,  remaining time: 35.6min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=220000, n=1000000, 22.0% finished. 
+  593.8sec, 2.7e-03sec per step,  remaining time: 35.1min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=230000, n=1000000, 23.0% finished. 
+  620.3sec, 2.7e-03sec per step,  remaining time: 34.6min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=240000, n=1000000, 24.0% finished. 
+  646.8sec, 2.7e-03sec per step,  remaining time: 34.1min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=250000, n=1000000, 25.0% finished. 
+  673.3sec, 2.7e-03sec per step,  remaining time: 33.7min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=260000, n=1000000, 26.0% finished. 
+  700.2sec, 2.7e-03sec per step,  remaining time: 33.2min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=270000, n=1000000, 27.0% finished. 
+  726.8sec, 2.7e-03sec per step,  remaining time: 32.8min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=280000, n=1000000, 28.0% finished. 
+  753.4sec, 2.7e-03sec per step,  remaining time: 32.3min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=290000, n=1000000, 29.0% finished. 
+  780.0sec, 2.7e-03sec per step,  remaining time: 31.8min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=300000, n=1000000, 30.0% finished. 
+  807.1sec, 2.7e-03sec per step,  remaining time: 31.4min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=310000, n=1000000, 31.0% finished. 
+  834.1sec, 2.7e-03sec per step,  remaining time: 30.9min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=320000, n=1000000, 32.0% finished. 
+  861.1sec, 2.7e-03sec per step,  remaining time: 30.5min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=330000, n=1000000, 33.0% finished. 
+  889.4sec, 2.7e-03sec per step,  remaining time: 30.1min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=340000, n=1000000, 34.0% finished. 
+  916.2sec, 2.7e-03sec per step,  remaining time: 29.6min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=350001, n=1000000, 35.0% finished. 
+  943.1sec, 2.7e-03sec per step,  remaining time: 29.2min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=360000, n=1000000, 36.0% finished. 
+  971.8sec, 2.7e-03sec per step,  remaining time: 28.8min
+  average ODE step=37.30,  average xi=2.70e+00
+
+i=370000, n=1000000, 37.0% finished. 
+  999.9sec, 2.7e-03sec per step,  remaining time: 28.4min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=380000, n=1000000, 38.0% finished. 
+  1026.5sec, 2.7e-03sec per step,  remaining time: 27.9min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=390000, n=1000000, 39.0% finished. 
+  1053.0sec, 2.7e-03sec per step,  remaining time: 27.5min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=400000, n=1000000, 40.0% finished. 
+  1079.6sec, 2.7e-03sec per step,  remaining time: 27.0min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=410001, n=1000000, 41.0% finished. 
+  1106.1sec, 2.7e-03sec per step,  remaining time: 26.5min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=420000, n=1000000, 42.0% finished. 
+  1132.6sec, 2.7e-03sec per step,  remaining time: 26.1min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=430000, n=1000000, 43.0% finished. 
+  1159.3sec, 2.7e-03sec per step,  remaining time: 25.6min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=440000, n=1000000, 44.0% finished. 
+  1185.8sec, 2.7e-03sec per step,  remaining time: 25.2min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=450000, n=1000000, 45.0% finished. 
+  1212.3sec, 2.7e-03sec per step,  remaining time: 24.7min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=460000, n=1000000, 46.0% finished. 
+  1238.9sec, 2.7e-03sec per step,  remaining time: 24.2min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=470000, n=1000000, 47.0% finished. 
+  1265.6sec, 2.7e-03sec per step,  remaining time: 23.8min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=480000, n=1000000, 48.0% finished. 
+  1292.4sec, 2.7e-03sec per step,  remaining time: 23.3min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=490000, n=1000000, 49.0% finished. 
+  1319.0sec, 2.7e-03sec per step,  remaining time: 22.9min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=500000, n=1000000, 50.0% finished. 
+  1345.5sec, 2.7e-03sec per step,  remaining time: 22.4min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=510000, n=1000000, 51.0% finished. 
+  1372.0sec, 2.7e-03sec per step,  remaining time: 22.0min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=520000, n=1000000, 52.0% finished. 
+  1398.5sec, 2.7e-03sec per step,  remaining time: 21.5min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=530000, n=1000000, 53.0% finished. 
+  1425.1sec, 2.7e-03sec per step,  remaining time: 21.1min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=540000, n=1000000, 54.0% finished. 
+  1451.8sec, 2.7e-03sec per step,  remaining time: 20.6min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=550000, n=1000000, 55.0% finished. 
+  1478.5sec, 2.7e-03sec per step,  remaining time: 20.2min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=560000, n=1000000, 56.0% finished. 
+  1505.3sec, 2.7e-03sec per step,  remaining time: 19.7min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=570001, n=1000000, 57.0% finished. 
+  1531.8sec, 2.7e-03sec per step,  remaining time: 19.3min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=580000, n=1000000, 58.0% finished. 
+  1558.4sec, 2.7e-03sec per step,  remaining time: 18.8min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=590000, n=1000000, 59.0% finished. 
+  1584.8sec, 2.7e-03sec per step,  remaining time: 18.4min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=600000, n=1000000, 60.0% finished. 
+  1611.3sec, 2.7e-03sec per step,  remaining time: 17.9min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=610000, n=1000000, 61.0% finished. 
+  1637.8sec, 2.7e-03sec per step,  remaining time: 17.5min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=620000, n=1000000, 62.0% finished. 
+  1664.3sec, 2.7e-03sec per step,  remaining time: 17.0min
+  average ODE step=37.31,  average xi=2.70e+00
+
+i=630000, n=1000000, 63.0% finished. 
+  1690.8sec, 2.7e-03sec per step,  remaining time: 16.6min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=640000, n=1000000, 64.0% finished. 
+  1717.4sec, 2.7e-03sec per step,  remaining time: 16.1min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=650000, n=1000000, 65.0% finished. 
+  1744.0sec, 2.7e-03sec per step,  remaining time: 15.7min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=660000, n=1000000, 66.0% finished. 
+  1770.6sec, 2.7e-03sec per step,  remaining time: 15.2min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=670000, n=1000000, 67.0% finished. 
+  1797.1sec, 2.7e-03sec per step,  remaining time: 14.8min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=680000, n=1000000, 68.0% finished. 
+  1823.6sec, 2.7e-03sec per step,  remaining time: 14.3min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=690000, n=1000000, 69.0% finished. 
+  1850.1sec, 2.7e-03sec per step,  remaining time: 13.9min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=700001, n=1000000, 70.0% finished. 
+  1876.6sec, 2.7e-03sec per step,  remaining time: 13.4min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=710000, n=1000000, 71.0% finished. 
+  1903.1sec, 2.7e-03sec per step,  remaining time: 13.0min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=720000, n=1000000, 72.0% finished. 
+  1929.5sec, 2.7e-03sec per step,  remaining time: 12.5min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=730000, n=1000000, 73.0% finished. 
+  1956.1sec, 2.7e-03sec per step,  remaining time: 12.1min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=740000, n=1000000, 74.0% finished. 
+  1982.6sec, 2.7e-03sec per step,  remaining time: 11.6min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=750000, n=1000000, 75.0% finished. 
+  2009.1sec, 2.7e-03sec per step,  remaining time: 11.2min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=760000, n=1000000, 76.0% finished. 
+  2036.2sec, 2.7e-03sec per step,  remaining time: 10.7min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=770000, n=1000000, 77.0% finished. 
+  2063.0sec, 2.7e-03sec per step,  remaining time: 10.3min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=780000, n=1000000, 78.0% finished. 
+  2089.6sec, 2.7e-03sec per step,  remaining time:  9.8min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=790000, n=1000000, 79.0% finished. 
+  2116.1sec, 2.7e-03sec per step,  remaining time:  9.4min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=800000, n=1000000, 80.0% finished. 
+  2142.6sec, 2.7e-03sec per step,  remaining time:  8.9min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=810000, n=1000000, 81.0% finished. 
+  2169.2sec, 2.7e-03sec per step,  remaining time:  8.5min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=820001, n=1000000, 82.0% finished. 
+  2196.0sec, 2.7e-03sec per step,  remaining time:  8.0min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=830001, n=1000000, 83.0% finished. 
+  2222.6sec, 2.7e-03sec per step,  remaining time:  7.6min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=840000, n=1000000, 84.0% finished. 
+  2249.1sec, 2.7e-03sec per step,  remaining time:  7.1min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=850000, n=1000000, 85.0% finished. 
+  2275.8sec, 2.7e-03sec per step,  remaining time:  6.7min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=860000, n=1000000, 86.0% finished. 
+  2302.5sec, 2.7e-03sec per step,  remaining time:  6.2min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=870000, n=1000000, 87.0% finished. 
+  2329.3sec, 2.7e-03sec per step,  remaining time:  5.8min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=880000, n=1000000, 88.0% finished. 
+  2355.8sec, 2.7e-03sec per step,  remaining time:  5.4min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=890000, n=1000000, 89.0% finished. 
+  2382.6sec, 2.7e-03sec per step,  remaining time:  4.9min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=900000, n=1000000, 90.0% finished. 
+  2409.6sec, 2.7e-03sec per step,  remaining time:  4.5min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=910000, n=1000000, 91.0% finished. 
+  2436.2sec, 2.7e-03sec per step,  remaining time:  4.0min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=920000, n=1000000, 92.0% finished. 
+  2462.8sec, 2.7e-03sec per step,  remaining time:  3.6min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=930000, n=1000000, 93.0% finished. 
+  2489.3sec, 2.7e-03sec per step,  remaining time:  3.1min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=940000, n=1000000, 94.0% finished. 
+  2515.8sec, 2.7e-03sec per step,  remaining time:  2.7min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=950001, n=1000000, 95.0% finished. 
+  2542.3sec, 2.7e-03sec per step,  remaining time:  2.2min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=960000, n=1000000, 96.0% finished. 
+  2568.9sec, 2.7e-03sec per step,  remaining time:  1.8min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=970000, n=1000000, 97.0% finished. 
+  2595.4sec, 2.7e-03sec per step,  remaining time:  1.3min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=980000, n=1000000, 98.0% finished. 
+  2621.9sec, 2.7e-03sec per step,  remaining time:  0.9min
+  average ODE step=37.32,  average xi=2.70e+00
+
+i=990000, n=1000000, 99.0% finished. 
+  2648.5sec, 2.7e-03sec per step,  remaining time:  0.4min
+  average ODE step=37.32,  average xi=2.70e+00
+
+average iteration steps = 37.32
+
+average xi distance = 2.699e+00
+
+Average try number = 1.0
+
+Prob. when dt is large = 1.0000
+
+n=1000000	max_lag=1000	mean=3.7827e-03	sigma=3.9009e-03	tau=1.5134e+01
+
+
+Runtime : 2676.87 sec.
+

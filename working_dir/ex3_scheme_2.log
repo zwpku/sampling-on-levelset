@@ -1,0 +1,17 @@
+0: \Theta
+1: \Theta^{A}
+2: \Pi
+3: E-M
+input scheme id= 2
+Scheme=2
+Total time = 200000.00
+h=1.00e-02
+n=2.0e+07
+No. of output states=20000
+
+average iteration steps = 32.26
+
+average xi distance = 0.000e+00
+
+
+Runtime : 52.34 sec.

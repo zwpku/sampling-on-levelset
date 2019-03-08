@@ -250,6 +250,7 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
       vec_a[i] += linear_sol[i] ;
 
     step ++ ;
+    // compute the new state
     for (int i =0 ; i < d; i ++)
     {
       s = 0;
@@ -258,6 +259,7 @@ int projection_by_Newton(vector<vector<double> > & Qx, vector<double> & x0)
       tmp_x[i] = x0[i] + s;
     }
 
+    // compute the value of xi at new state
     xi(tmp_x, tmp_rhs) ;
     eps = sqrt(vec_dot(tmp_rhs, tmp_rhs)) ;
   }
@@ -353,7 +355,8 @@ int main ( int argc, char * argv[] )
   init_rand_generator();
 
   printf("SO(N), N=");
-  cin >> N ;
+//  cin >> N ;
+  N = 11 ;
   d = N * N ;
   k = N * (N+1) / 2 ;
 
@@ -386,6 +389,7 @@ int main ( int argc, char * argv[] )
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
   printf("n=%d\t output_step =%d \n", n, output_every_step ) ;
   printf("h (mcmc) =%.3e,\t size_s=%.3e\n", h_mcmc, size_s) ;
+  fflush(stdout);
 
   // for the initial state, compute the Jaccobi (gradient) matrix of xi at current state 
   grad_xi(state, grad_vec) ;
@@ -407,6 +411,7 @@ int main ( int argc, char * argv[] )
       printf("\ni=%d, n=%d, %.1f\%% finished.\n", i, n, progress * 1.0 ) ;
       printf("  %.1fsec, %.1esec per step,  remaining time: %4.1fmin\n  Newton success rate=%.2f,  average xi=%.2e\n", (end-start) * 1.0 / CLOCKS_PER_SEC, (end - start) * 1.0 / CLOCKS_PER_SEC / i, 
 	  (end - start) * 1.0 / CLOCKS_PER_SEC * (n-i) / (i * 60.0), (i-forward_newton_counter) * 1.0 / i, mean_xi_distance / i );
+      fflush(stdout);
       progress ++ ;
     }
 

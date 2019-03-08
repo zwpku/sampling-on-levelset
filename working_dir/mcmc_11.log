@@ -1,0 +1,416 @@
+SO(N), N=
+SO(11),	d=121	k=66
+n=1000000	 output_step =1 
+h (mcmc) =3.300e-02,	 size_s=2.569e-01
+
+i=10000, n=1000000, 1.0% finished.
+  73.0sec, 7.3e-03sec per step,  remaining time: 120.4min
+  Newton success rate=0.67,  average xi=9.30e-01
+
+i=20000, n=1000000, 2.0% finished.
+  145.8sec, 7.3e-03sec per step,  remaining time: 119.1min
+  Newton success rate=0.66,  average xi=9.30e-01
+
+i=30000, n=1000000, 3.0% finished.
+  219.0sec, 7.3e-03sec per step,  remaining time: 118.0min
+  Newton success rate=0.67,  average xi=9.30e-01
+
+i=40000, n=1000000, 4.0% finished.
+  292.0sec, 7.3e-03sec per step,  remaining time: 116.8min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=50000, n=1000000, 5.0% finished.
+  365.6sec, 7.3e-03sec per step,  remaining time: 115.8min
+  Newton success rate=0.67,  average xi=9.30e-01
+
+i=60000, n=1000000, 6.0% finished.
+  438.7sec, 7.3e-03sec per step,  remaining time: 114.5min
+  Newton success rate=0.67,  average xi=9.30e-01
+
+i=70000, n=1000000, 7.0% finished.
+  511.9sec, 7.3e-03sec per step,  remaining time: 113.3min
+  Newton success rate=0.67,  average xi=9.30e-01
+
+i=80000, n=1000000, 8.0% finished.
+  585.2sec, 7.3e-03sec per step,  remaining time: 112.2min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=90000, n=1000000, 9.0% finished.
+  658.5sec, 7.3e-03sec per step,  remaining time: 111.0min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=100000, n=1000000, 10.0% finished.
+  731.7sec, 7.3e-03sec per step,  remaining time: 109.8min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=110000, n=1000000, 11.0% finished.
+  805.3sec, 7.3e-03sec per step,  remaining time: 108.6min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=120000, n=1000000, 12.0% finished.
+  878.5sec, 7.3e-03sec per step,  remaining time: 107.4min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=130000, n=1000000, 13.0% finished.
+  951.6sec, 7.3e-03sec per step,  remaining time: 106.1min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=140000, n=1000000, 14.0% finished.
+  1024.7sec, 7.3e-03sec per step,  remaining time: 104.9min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=150000, n=1000000, 15.0% finished.
+  1097.9sec, 7.3e-03sec per step,  remaining time: 103.7min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=160000, n=1000000, 16.0% finished.
+  1170.8sec, 7.3e-03sec per step,  remaining time: 102.4min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=170000, n=1000000, 17.0% finished.
+  1243.8sec, 7.3e-03sec per step,  remaining time: 101.2min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=180000, n=1000000, 18.0% finished.
+  1316.9sec, 7.3e-03sec per step,  remaining time: 100.0min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=190000, n=1000000, 19.0% finished.
+  1389.9sec, 7.3e-03sec per step,  remaining time: 98.8min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=200000, n=1000000, 20.0% finished.
+  1462.8sec, 7.3e-03sec per step,  remaining time: 97.5min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=210000, n=1000000, 21.0% finished.
+  1536.2sec, 7.3e-03sec per step,  remaining time: 96.3min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=220000, n=1000000, 22.0% finished.
+  1609.3sec, 7.3e-03sec per step,  remaining time: 95.1min
+  Newton success rate=0.67,  average xi=9.29e-01
+
+i=230000, n=1000000, 23.0% finished.
+  1682.8sec, 7.3e-03sec per step,  remaining time: 93.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=240000, n=1000000, 24.0% finished.
+  1755.9sec, 7.3e-03sec per step,  remaining time: 92.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=250000, n=1000000, 25.0% finished.
+  1829.2sec, 7.3e-03sec per step,  remaining time: 91.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=260000, n=1000000, 26.0% finished.
+  1902.3sec, 7.3e-03sec per step,  remaining time: 90.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=270000, n=1000000, 27.0% finished.
+  1975.2sec, 7.3e-03sec per step,  remaining time: 89.0min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=280000, n=1000000, 28.0% finished.
+  2048.2sec, 7.3e-03sec per step,  remaining time: 87.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=290000, n=1000000, 29.0% finished.
+  2121.8sec, 7.3e-03sec per step,  remaining time: 86.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=300000, n=1000000, 30.0% finished.
+  2194.9sec, 7.3e-03sec per step,  remaining time: 85.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=310000, n=1000000, 31.0% finished.
+  2267.9sec, 7.3e-03sec per step,  remaining time: 84.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=320000, n=1000000, 32.0% finished.
+  2340.8sec, 7.3e-03sec per step,  remaining time: 82.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=330000, n=1000000, 33.0% finished.
+  2414.3sec, 7.3e-03sec per step,  remaining time: 81.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=340000, n=1000000, 34.0% finished.
+  2487.3sec, 7.3e-03sec per step,  remaining time: 80.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=350001, n=1000000, 35.0% finished.
+  2560.5sec, 7.3e-03sec per step,  remaining time: 79.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=360000, n=1000000, 36.0% finished.
+  2633.9sec, 7.3e-03sec per step,  remaining time: 78.0min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=370000, n=1000000, 37.0% finished.
+  2707.0sec, 7.3e-03sec per step,  remaining time: 76.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=380000, n=1000000, 38.0% finished.
+  2780.1sec, 7.3e-03sec per step,  remaining time: 75.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=390000, n=1000000, 39.0% finished.
+  2853.1sec, 7.3e-03sec per step,  remaining time: 74.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=400000, n=1000000, 40.0% finished.
+  2926.3sec, 7.3e-03sec per step,  remaining time: 73.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=410001, n=1000000, 41.0% finished.
+  2999.6sec, 7.3e-03sec per step,  remaining time: 71.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=420000, n=1000000, 42.0% finished.
+  3072.7sec, 7.3e-03sec per step,  remaining time: 70.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=430000, n=1000000, 43.0% finished.
+  3145.9sec, 7.3e-03sec per step,  remaining time: 69.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=440000, n=1000000, 44.0% finished.
+  3218.9sec, 7.3e-03sec per step,  remaining time: 68.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=450000, n=1000000, 45.0% finished.
+  3292.0sec, 7.3e-03sec per step,  remaining time: 67.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=460000, n=1000000, 46.0% finished.
+  3364.9sec, 7.3e-03sec per step,  remaining time: 65.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=470000, n=1000000, 47.0% finished.
+  3438.1sec, 7.3e-03sec per step,  remaining time: 64.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=480000, n=1000000, 48.0% finished.
+  3511.0sec, 7.3e-03sec per step,  remaining time: 63.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=490000, n=1000000, 49.0% finished.
+  3583.8sec, 7.3e-03sec per step,  remaining time: 62.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=500000, n=1000000, 50.0% finished.
+  3656.9sec, 7.3e-03sec per step,  remaining time: 60.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=510000, n=1000000, 51.0% finished.
+  3730.2sec, 7.3e-03sec per step,  remaining time: 59.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=520000, n=1000000, 52.0% finished.
+  3803.4sec, 7.3e-03sec per step,  remaining time: 58.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=530000, n=1000000, 53.0% finished.
+  3876.6sec, 7.3e-03sec per step,  remaining time: 57.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=540000, n=1000000, 54.0% finished.
+  3949.5sec, 7.3e-03sec per step,  remaining time: 56.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=550000, n=1000000, 55.0% finished.
+  4022.7sec, 7.3e-03sec per step,  remaining time: 54.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=560000, n=1000000, 56.0% finished.
+  4095.8sec, 7.3e-03sec per step,  remaining time: 53.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=570001, n=1000000, 57.0% finished.
+  4168.9sec, 7.3e-03sec per step,  remaining time: 52.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=580000, n=1000000, 58.0% finished.
+  4241.9sec, 7.3e-03sec per step,  remaining time: 51.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=590000, n=1000000, 59.0% finished.
+  4315.0sec, 7.3e-03sec per step,  remaining time: 50.0min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=600000, n=1000000, 60.0% finished.
+  4388.2sec, 7.3e-03sec per step,  remaining time: 48.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=610000, n=1000000, 61.0% finished.
+  4461.2sec, 7.3e-03sec per step,  remaining time: 47.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=620000, n=1000000, 62.0% finished.
+  4534.2sec, 7.3e-03sec per step,  remaining time: 46.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=630000, n=1000000, 63.0% finished.
+  4607.3sec, 7.3e-03sec per step,  remaining time: 45.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=640000, n=1000000, 64.0% finished.
+  4680.8sec, 7.3e-03sec per step,  remaining time: 43.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=650000, n=1000000, 65.0% finished.
+  4754.0sec, 7.3e-03sec per step,  remaining time: 42.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=660000, n=1000000, 66.0% finished.
+  4827.1sec, 7.3e-03sec per step,  remaining time: 41.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=670000, n=1000000, 67.0% finished.
+  4900.6sec, 7.3e-03sec per step,  remaining time: 40.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=680000, n=1000000, 68.0% finished.
+  4973.6sec, 7.3e-03sec per step,  remaining time: 39.0min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=690000, n=1000000, 69.0% finished.
+  5046.9sec, 7.3e-03sec per step,  remaining time: 37.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=700001, n=1000000, 70.0% finished.
+  5119.9sec, 7.3e-03sec per step,  remaining time: 36.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=710000, n=1000000, 71.0% finished.
+  5192.9sec, 7.3e-03sec per step,  remaining time: 35.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=720000, n=1000000, 72.0% finished.
+  5265.8sec, 7.3e-03sec per step,  remaining time: 34.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=730000, n=1000000, 73.0% finished.
+  5339.1sec, 7.3e-03sec per step,  remaining time: 32.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=740000, n=1000000, 74.0% finished.
+  5412.2sec, 7.3e-03sec per step,  remaining time: 31.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=750000, n=1000000, 75.0% finished.
+  5485.3sec, 7.3e-03sec per step,  remaining time: 30.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=760000, n=1000000, 76.0% finished.
+  5558.3sec, 7.3e-03sec per step,  remaining time: 29.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=770000, n=1000000, 77.0% finished.
+  5631.4sec, 7.3e-03sec per step,  remaining time: 28.0min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=780000, n=1000000, 78.0% finished.
+  5704.5sec, 7.3e-03sec per step,  remaining time: 26.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=790000, n=1000000, 79.0% finished.
+  5778.1sec, 7.3e-03sec per step,  remaining time: 25.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=800000, n=1000000, 80.0% finished.
+  5851.7sec, 7.3e-03sec per step,  remaining time: 24.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=810000, n=1000000, 81.0% finished.
+  5925.0sec, 7.3e-03sec per step,  remaining time: 23.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=820001, n=1000000, 82.0% finished.
+  5998.0sec, 7.3e-03sec per step,  remaining time: 21.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=830001, n=1000000, 83.0% finished.
+  6071.2sec, 7.3e-03sec per step,  remaining time: 20.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=840000, n=1000000, 84.0% finished.
+  6144.6sec, 7.3e-03sec per step,  remaining time: 19.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=850000, n=1000000, 85.0% finished.
+  6217.5sec, 7.3e-03sec per step,  remaining time: 18.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=860000, n=1000000, 86.0% finished.
+  6290.6sec, 7.3e-03sec per step,  remaining time: 17.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=870000, n=1000000, 87.0% finished.
+  6363.7sec, 7.3e-03sec per step,  remaining time: 15.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=880000, n=1000000, 88.0% finished.
+  6436.8sec, 7.3e-03sec per step,  remaining time: 14.6min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=890000, n=1000000, 89.0% finished.
+  6509.8sec, 7.3e-03sec per step,  remaining time: 13.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=900000, n=1000000, 90.0% finished.
+  6583.0sec, 7.3e-03sec per step,  remaining time: 12.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=910000, n=1000000, 91.0% finished.
+  6656.2sec, 7.3e-03sec per step,  remaining time: 11.0min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=920000, n=1000000, 92.0% finished.
+  6729.2sec, 7.3e-03sec per step,  remaining time:  9.8min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=930000, n=1000000, 93.0% finished.
+  6802.5sec, 7.3e-03sec per step,  remaining time:  8.5min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=940000, n=1000000, 94.0% finished.
+  6875.7sec, 7.3e-03sec per step,  remaining time:  7.3min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=950001, n=1000000, 95.0% finished.
+  6948.8sec, 7.3e-03sec per step,  remaining time:  6.1min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=960000, n=1000000, 96.0% finished.
+  7021.8sec, 7.3e-03sec per step,  remaining time:  4.9min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=970000, n=1000000, 97.0% finished.
+  7094.9sec, 7.3e-03sec per step,  remaining time:  3.7min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=980000, n=1000000, 98.0% finished.
+  7168.0sec, 7.3e-03sec per step,  remaining time:  2.4min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+i=990000, n=1000000, 99.0% finished.
+  7241.1sec, 7.3e-03sec per step,  remaining time:  1.2min
+  Newton success rate=0.67,  average xi=9.28e-01
+
+average Newton iteration steps = 6.10, average Newton steps to reach convergence = 5.15
+
+average xi distance = 9.283e-01
+
+Rejection rate: Forward	Reverse	Reversibility	Metrolis	Determinant	Total
+		 3.280e-01	0.000e+00	4.630e-04	0.000e+00	0.000e+00	3.285e-01
+
+n=1000000	max_lag=1000	mean=-3.8254e-03	sigma=3.7720e-03	tau=1.4285e+01
+
+max |v|, when Newton converges : 2.4065e+00
+min |v|, when Newton doesn't converge : 1.5904e+00
+
+
+Runtime : 7315.86 sec.
+

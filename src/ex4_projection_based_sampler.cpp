@@ -199,7 +199,8 @@ int main ( int argc, char * argv[] )
   noise_coeff = sqrt(2.0 / beta * h) ;
 
   printf("SO(N), N=") ;
-  cin >> N ;
+//  cin >> N ;
+  N = 11 ;
   d = N * N ;
   k = N * (N+1) / 2 ;
 
@@ -220,6 +221,7 @@ int main ( int argc, char * argv[] )
 
   printf("\nSO(%d),\td=%d\tk=%d\n", N, d, k) ;
   printf("n=%d\t h=%.3e\toutput_step =%d \n", n, h, output_every_step ) ;
+  fflush(stdout);
 
   int progress ;
   progress = 1 ;
@@ -242,6 +244,7 @@ int main ( int argc, char * argv[] )
       end = clock() ;
       printf("\ni=%d, n=%d, %.1f\%% finished. \n", i, n, progress * 1.0 ) ;
       printf("  %.1fsec, %.1esec per step,  remaining time: %4.1fmin\n  average ODE step=%.2f,  average xi=%.2e\n", (end-start) * 1.0 / CLOCKS_PER_SEC, (end - start) * 1.0 / CLOCKS_PER_SEC / i, (end - start) * 1.0 / CLOCKS_PER_SEC * (n-i) / (i * 60.0), tot_ode_step * 1.0 / i, mean_xi_distance / i) ;
+      fflush(stdout);
       progress ++ ;
     }
 
