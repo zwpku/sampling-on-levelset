@@ -93,6 +93,6 @@ ax3.set_yticks(np.arange(-2, 3, step=2))
 plt.show()
 plt.tight_layout()
 
-fig_file_name = '../fig/ex3_vec_fields.eps' 
+fig_file_name = '../fig/ex1_vec_fields.eps' 
 savefig(fig_file_name, bbox_inches='tight')
 

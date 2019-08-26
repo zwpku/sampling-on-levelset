@@ -16,9 +16,9 @@ N = int (raw_input('N='))
 mcmc_flag = int (raw_input('mcmc? (0/1)'))
 
 if mcmc_flag == 1:
-    data_file = open('../working_dir/data/ex4_mcmc_traj_%d.txt' % N, 'r')
+    data_file = open('../working_dir/data/ex2_mcmc_traj_%d.txt' % N, 'r')
 else :
-    data_file = open('../working_dir/data/ex4_no_mcmc_traj_%d.txt' % N, 'r')
+    data_file = open('../working_dir/data/ex2_no_mcmc_traj_%d.txt' % N, 'r')
 
 n_traj, = [ int(x) for x in data_file.readline().split() ]
 
@@ -41,9 +41,9 @@ axs.tick_params(axis='y', labelsize=20)
 plt.show()
 
 if mcmc_flag == 1:
-    fig_file_name = '../fig/ex4_mcmc_trace_traj_%d.eps' % N
+    fig_file_name = '../fig/ex2_mcmc_trace_traj_%d.eps' % N
 else :
-    fig_file_name = '../fig/ex4_no_mcmc_trace_traj_%d.eps' % N
+    fig_file_name = '../fig/ex2_no_mcmc_trace_traj_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')
 

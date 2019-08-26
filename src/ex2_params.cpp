@@ -1,4 +1,4 @@
-#include "ex4.h"
+#include "ex2.h"
 
 int n, N, d, k ;
 int n_bins, output_every_step, maximal_try_number ;

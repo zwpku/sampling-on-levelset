@@ -1,4 +1,4 @@
-#include "ex4.h"
+#include "ex2.h"
 
 int dt_too_large_counter, tot_ode_step ;
 double beta, noise_coeff, ode_rescale_factor ;
@@ -214,7 +214,7 @@ int main ( int argc, char * argv[] )
   // get memory for several global variables
   allocate_mem() ;
 
-  sprintf(buf, "./data/log_ex4_no_mcmc_son_%d.txt", N) ;
+  sprintf(buf, "./data/log_ex2_no_mcmc_son_%d.txt", N) ;
   log_file.open(buf) ;
 
   start = clock() ;

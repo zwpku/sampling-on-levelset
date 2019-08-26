@@ -1,4 +1,4 @@
-#include "ex4.h"
+#include "ex2.h"
 
 // total steps
 int tot_newton_step, tot_success_newton_step ;
@@ -380,7 +380,7 @@ int main ( int argc, char * argv[] )
   // get memory for several global variables
   allocate_mem() ;
 
-  sprintf(buf, "./data/log_ex4_mcmc_son_%d.txt", N) ;
+  sprintf(buf, "./data/log_ex2_mcmc_son_%d.txt", N) ;
   log_file.open(buf) ;
 
   // count the time
@@ -588,7 +588,7 @@ int main ( int argc, char * argv[] )
   printf("min |v|, when Newton doesn't converge : %.4e\n", min_v_norm_not_converged) ; 
 
 
-  sprintf(buf, "./data/ex4_mcmc_v_norm_counter_%d.txt", N) ;
+  sprintf(buf, "./data/ex2_mcmc_v_norm_counter_%d.txt", N) ;
   out_file.open(buf) ;
 
   out_file << n - forward_newton_counter << ' ' << forward_newton_counter << ' ' << size_s << ' ' << len_v_bound << ' ' << n_v_bins << endl ;

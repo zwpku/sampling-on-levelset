@@ -16,14 +16,14 @@ N = int (raw_input('N='))
 mcmc_flag = int (raw_input('no-mcmc, mcmc, or both? (0/1/2)'))
 
 if mcmc_flag == 0 or mcmc_flag == 2 :
-    data_file = open('../working_dir/data/ex4_no_mcmc_acf_%d.txt' % N, 'r')
+    data_file = open('../working_dir/data/ex2_no_mcmc_acf_%d.txt' % N, 'r')
     maxlag, mean_val, sigma, tau = [ float (x) for x in data_file.readline().split() ]
     maxlag = int (maxlag)
     acf_data = [ float(x) for x in data_file.readline().split() ]
     axs.plot(acf_data, 'ko', markersize=5, label=r'projection by $\Theta$') 
 
 if mcmc_flag == 1 or mcmc_flag == 2 :
-    data_file = open('../working_dir/data/ex4_mcmc_acf_%d.txt' % N, 'r')
+    data_file = open('../working_dir/data/ex2_mcmc_acf_%d.txt' % N, 'r')
     maxlag, mean_val, sigma, tau = [ float (x) for x in data_file.readline().split() ]
     maxlag = int (maxlag)
     acf_data = [ float(x) for x in data_file.readline().split() ]
@@ -42,10 +42,10 @@ axs.legend(frameon=False, fontsize=20, bbox_to_anchor=(0.92, 0.80))
 plt.show()
 
 if mcmc_flag == 0:
-    fig_file_name = '../fig/ex4_no_mcmc_acf_%d.eps' % N
+    fig_file_name = '../fig/ex2_no_mcmc_acf_%d.eps' % N
 elif mcmc_flag == 1:
-    fig_file_name = '../fig/ex4_mcmc_acf_%d.eps' % N
+    fig_file_name = '../fig/ex2_mcmc_acf_%d.eps' % N
 else :
-    fig_file_name = '../fig/ex4_both_acf_%d.eps' % N
+    fig_file_name = '../fig/ex2_both_acf_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')

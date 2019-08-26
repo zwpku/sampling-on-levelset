@@ -16,7 +16,7 @@ N = int (raw_input('N='))
 
 n_dof = N * (N-1) / 2
 
-data_file = open('../working_dir/data/ex4_mcmc_v_norm_counter_%d.txt' % N, 'r')
+data_file = open('../working_dir/data/ex2_mcmc_v_norm_counter_%d.txt' % N, 'r')
 
 n_conv, n_no_conv, size_s, v_b, n_bin = [ float(x) for x in data_file.readline().split() ]
 bin_width = v_b / n_bin 
@@ -60,7 +60,7 @@ axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 plt.show()
 
-fig_file_name = '../fig/ex4_mcmc_v_dist_%d.eps' % N
+fig_file_name = '../fig/ex2_mcmc_v_dist_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')
 

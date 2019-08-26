@@ -353,13 +353,13 @@ int main ( int argc, char * argv[] )
 
   printf("Scheme=%d\nTotal time = %.2f\nh=%.2e\nn=%.1e\nNo. of output states=%d\n", scheme_id, T, h, n *1.0, n / output_every_step) ;
 
-  sprintf(buf, "./data/ex3_traj_%d.txt", scheme_id) ;
+  sprintf(buf, "./data/ex1_traj_%d.txt", scheme_id) ;
 
   out_file.open(buf) ;
 
   out_file << n / output_every_step << endl ;
 
-  sprintf(buf, "./data/log_ex3_scheme_%d.txt", scheme_id) ;
+  sprintf(buf, "./data/log_ex1_scheme_%d.txt", scheme_id) ;
   log_file.open(buf) ;
 
   angle = 0 ;
@@ -412,7 +412,7 @@ int main ( int argc, char * argv[] )
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
 
-  sprintf(buf, "./data/ex3_counter_%d.txt", scheme_id) ;
+  sprintf(buf, "./data/ex1_counter_%d.txt", scheme_id) ;
   out_file.open(buf) ;
 
   out_file << n << ' ' << n_bins << endl ;

@@ -1,4 +1,4 @@
-#include "ex4.h"
+#include "ex2.h"
 
 // 
 // the vector-valued reaction coordinate function: N + N * (N-1) / 2
@@ -141,9 +141,9 @@ void analysis_data_and_output()
 
   // Step 1, output the time series of the trace
   if (mcmc_flag == 0)
-    sprintf(buf, "./data/ex4_no_mcmc_traj_%d.txt", N) ;
+    sprintf(buf, "./data/ex2_no_mcmc_traj_%d.txt", N) ;
   else 
-    sprintf(buf, "./data/ex4_mcmc_traj_%d.txt", N) ;
+    sprintf(buf, "./data/ex2_mcmc_traj_%d.txt", N) ;
 
   out_file.open(buf) ;
   out_file << n / output_every_step << endl ;
@@ -167,9 +167,9 @@ void analysis_data_and_output()
     counter_of_each_bin[idx] ++ ;
   }
   if (mcmc_flag == 0)
-    sprintf(buf, "./data/ex4_no_mcmc_counter_%d.txt", N) ;
+    sprintf(buf, "./data/ex2_no_mcmc_counter_%d.txt", N) ;
   else 
-    sprintf(buf, "./data/ex4_mcmc_counter_%d.txt", N) ;
+    sprintf(buf, "./data/ex2_mcmc_counter_%d.txt", N) ;
 
   out_file.open(buf) ;
   out_file << n << ' ' << trace_b << ' ' << n_bins << endl ;
@@ -209,9 +209,9 @@ void analysis_data_and_output()
   printf("\nn=%d\tmax_lag=%d\tmean=%.4e\tsigma=%.4e\ttau=%.4e\n", n, max_lag, s, sigma, tau) ;
 
   if (mcmc_flag == 0)
-    sprintf(buf, "./data/ex4_no_mcmc_acf_%d.txt", N) ;
+    sprintf(buf, "./data/ex2_no_mcmc_acf_%d.txt", N) ;
   else 
-    sprintf(buf, "./data/ex4_mcmc_acf_%d.txt", N) ;
+    sprintf(buf, "./data/ex2_mcmc_acf_%d.txt", N) ;
 
   out_file.open(buf) ;
   out_file << max_lag << ' ' << s << ' ' << sigma << ' ' << tau << endl ;

@@ -28,13 +28,13 @@ stiff_eps = 0.005
 id_mat_a_flag = 1 
 
 # read data corresponding to small step-size
-data_file = open('../working_dir/data/ex2_theta_counter_%d_0.txt' % id_mat_a_flag , 'r')
+data_file = open('../working_dir/data/ex3_theta_counter_%d_0.txt' % id_mat_a_flag , 'r')
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = pi / n_bin 
 counter_data_0 = [ (float(x) * 1.0 / (n * bin_width)) for x in data_file.readline().split() ]
 
 # read data corresponding to large step-size
-data_file = open('../working_dir/data/ex2_theta_counter_%d_1.txt' % id_mat_a_flag , 'r')
+data_file = open('../working_dir/data/ex3_theta_counter_%d_1.txt' % id_mat_a_flag , 'r')
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = pi / n_bin 
 counter_data_1 = [ (float(x) * 1.0 / (n * bin_width)) for x in data_file.readline().split() ]
@@ -61,13 +61,13 @@ ax1.set_title(r'$\theta$', fontsize=22)
 ax1.legend(frameon=False, fontsize=12, bbox_to_anchor=(0.51, 0.40))
 
 # data for angle varphi, small step-size
-data_file = open('../working_dir/data/ex2_phi_counter_%d_0.txt' % id_mat_a_flag , 'r')
+data_file = open('../working_dir/data/ex3_phi_counter_%d_0.txt' % id_mat_a_flag , 'r')
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2 * pi / n_bin 
 counter_data_0 = [ (float(x) * 1.0 / (n * bin_width)) for x in data_file.readline().split() ]
 
 # data for angle varphi, large step-size
-data_file = open('../working_dir/data/ex2_phi_counter_%d_1.txt' % id_mat_a_flag , 'r')
+data_file = open('../working_dir/data/ex3_phi_counter_%d_1.txt' % id_mat_a_flag , 'r')
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2 * pi / n_bin 
 counter_data_1 = [ (float(x) * 1.0 / (n * bin_width)) for x in data_file.readline().split() ]
@@ -88,7 +88,7 @@ ax2.tick_params(axis='y', labelsize=18)
 ax2.set_title(r'$\varphi$', fontsize=22)
 ax2.legend(frameon=False, fontsize=12, bbox_to_anchor=(0.90, 0.55))
 
-fig_file_name = '../fig/ex2_theta_phi_dist_%d.eps' % id_mat_a_flag
+fig_file_name = '../fig/ex3_theta_phi_dist_%d.eps' % id_mat_a_flag
 savefig(fig_file_name, bbox_inches='tight')
 
 plt.clf()
@@ -98,7 +98,7 @@ fig, [ax1,ax2] = plt.subplots(1,2, figsize=(9,2.5) )
 id_mat_a_flag = 0 
 
 # data for angle theta
-data_file = open('../working_dir/data/ex2_theta_counter_%d_1.txt' % id_mat_a_flag , 'r')
+data_file = open('../working_dir/data/ex3_theta_counter_%d_1.txt' % id_mat_a_flag , 'r')
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = pi / n_bin 
 counter_data_0 = [ (float(x) * 1.0 / (n * bin_width)) for x in data_file.readline().split() ]
@@ -123,7 +123,7 @@ ax1.set_title(r'$\theta$', fontsize=22)
 ax1.legend(frameon=False, fontsize=12, bbox_to_anchor=(0.53, 0.75))
 
 # data for angle varphi
-data_file = open('../working_dir/data/ex2_phi_counter_%d_1.txt' % id_mat_a_flag , 'r')
+data_file = open('../working_dir/data/ex3_phi_counter_%d_1.txt' % id_mat_a_flag , 'r')
 n, n_bin = [ int (x) for x in data_file.readline().split() ]
 bin_width = 2 * pi / n_bin 
 counter_data_0 = [ (float(x) * 1.0 / (n * bin_width)) for x in data_file.readline().split() ]
@@ -142,6 +142,6 @@ ax2.tick_params(axis='y', labelsize=18)
 ax2.set_title(r'$\varphi$', fontsize=22)
 ax2.legend(frameon=False, fontsize=12, bbox_to_anchor=(0.90, 0.55))
 
-fig_file_name = '../fig/ex2_theta_phi_dist_%d.eps' % id_mat_a_flag
+fig_file_name = '../fig/ex3_theta_phi_dist_%d.eps' % id_mat_a_flag
 savefig(fig_file_name, bbox_inches='tight')
 

@@ -17,7 +17,7 @@ mcmc_flag = int (raw_input('no-mcmc, mcmc, or both? (0/1/2)'))
 
 
 if mcmc_flag == 0 or mcmc_flag == 2 :
-    data_file = open('../working_dir/data/ex4_no_mcmc_counter_%d.txt' % N, 'r')
+    data_file = open('../working_dir/data/ex2_no_mcmc_counter_%d.txt' % N, 'r')
     n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
     bin_width = 2.0 * xb / n_bin 
     counter_data = [ (float(x) / (n * bin_width)) for x in data_file.readline().split() ]
@@ -25,7 +25,7 @@ if mcmc_flag == 0 or mcmc_flag == 2 :
     axs.plot(x_vec, counter_data, color='k',linewidth=1.5, label=r'projection by $\Theta$') 
 
 if mcmc_flag == 1 or mcmc_flag == 2 :
-    data_file = open('../working_dir/data/ex4_mcmc_counter_%d.txt' % N, 'r')
+    data_file = open('../working_dir/data/ex2_mcmc_counter_%d.txt' % N, 'r')
     n, xb, n_bin = [ int (x) for x in data_file.readline().split() ]
     bin_width = 2.0 * xb / n_bin 
     counter_data = [ (float(x) / (n * bin_width)) for x in data_file.readline().split() ]
@@ -49,10 +49,10 @@ axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(0.52, 0.68))
 plt.show()
 
 if mcmc_flag == 0:
-    fig_file_name = '../fig/ex4_no_mcmc_trace_dist_%d.eps' % N
+    fig_file_name = '../fig/ex2_no_mcmc_trace_dist_%d.eps' % N
 elif mcmc_flag == 1:
-    fig_file_name = '../fig/ex4_mcmc_trace_dist_%d.eps' % N
+    fig_file_name = '../fig/ex2_mcmc_trace_dist_%d.eps' % N
 else :
-    fig_file_name = '../fig/ex4_both_trace_dist_%d.eps' % N
+    fig_file_name = '../fig/ex2_both_trace_dist_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')

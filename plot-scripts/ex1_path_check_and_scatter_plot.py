@@ -14,7 +14,7 @@ xb = 5
 yb = 2
 c = 3
 scheme_id = 3 
-data_file = open('../working_dir/data/ex3_traj_%d.txt' % (scheme_id) , 'r')
+data_file = open('../working_dir/data/ex1_traj_%d.txt' % (scheme_id) , 'r')
 n = int (data_file.readline())
   
 data = np.loadtxt(data_file, unpack=True)
@@ -53,5 +53,5 @@ ax.set_aspect('equal')
 
 plt.tight_layout()
 plt.show()
-fig_file_name = '../fig/ex3_traj_%d.eps' % (scheme_id)
+fig_file_name = '../fig/ex1_traj_%d.eps' % (scheme_id)
 savefig(fig_file_name, bbox_inches='tight')

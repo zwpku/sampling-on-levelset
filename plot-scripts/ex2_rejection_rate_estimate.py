@@ -49,7 +49,7 @@ axs.legend(frameon=False, fontsize=18, bbox_to_anchor=(1.06, 1.00))
 
 plt.show()
 
-fig_file_name = '../fig/ex4_rate_estimate_%d.eps' % N
+fig_file_name = '../fig/ex2_rate_estimate_%d.eps' % N
 
 savefig(fig_file_name, bbox_inches='tight')
 

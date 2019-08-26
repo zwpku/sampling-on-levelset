@@ -1,4 +1,4 @@
-#include "ex2.h"
+#include "ex3.h"
 
 const double pi = atan(1) * 4 ;
 
@@ -271,7 +271,7 @@ int main ( int argc, char * argv[] )
 
   printf("n=%d\t\th=%.2e\tT=%.2f\t\tNo. of output states=%d\n", n, h, T, n / output_every_step) ;
 
-  sprintf(buf, "./data/ex2_traj_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
+  sprintf(buf, "./data/ex3_traj_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
 
   out_file.open(buf) ;
 
@@ -304,7 +304,7 @@ int main ( int argc, char * argv[] )
   printf("\naverage iteration steps = %.2f\n", tot_step * 1.0 / n) ;
   printf("\naverage xi distance = %.3e\n", mean_xi_distance * 1.0 / n) ;
 
-  sprintf(buf, "./data/ex2_theta_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
+  sprintf(buf, "./data/ex3_theta_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
   out_file.open(buf) ;
   out_file << n << ' ' << n_bins_theta << endl ;
   for (int i = 0 ; i < n_bins_theta ; i++)
@@ -314,7 +314,7 @@ int main ( int argc, char * argv[] )
   out_file << endl ;
   out_file.close() ;
 
-  sprintf(buf, "./data/ex2_phi_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
+  sprintf(buf, "./data/ex3_phi_counter_%d_%d.txt", id_mat_a_flag, large_step_size_flag) ;
   out_file.open(buf) ;
   out_file << n << ' ' << n_bins_phi << endl ;
   for (int i = 0 ; i < n_bins_phi ; i++)
