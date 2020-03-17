@@ -1,8 +1,9 @@
 # sampling-on-levelset
 
-Numerical codes for sampling schemes on a level set. 
+Codes of sampling schemes on a level set of a given function. 
 
-These codes have been used to study the numerical examples in the paper:
+These codes have been used to produce numerical results of the paper:
 
- [Ergodic SDEs on submanifolds and related numerical sampling schemes](https://arxiv.org/abs/1702.08064)
+ Ergodic SDEs on submanifolds and related numerical sampling schemes, ESAIM:M2AN, 54(2), pp.391-430, 2020.
+ [doi](https://doi.org/10.1051/m2an/2019071), [arxiv](https://arxiv.org/abs/1702.08064)
 
