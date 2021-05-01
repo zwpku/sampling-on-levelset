@@ -1,5 +1,5 @@
 # sampling-on-levelset
-A sampling scheme on a function's level set. 
+A sampling scheme on a function's level-set. 
 
 These code has been used to produce numerical results in the paper:
 
